@@ -112,7 +112,7 @@ public:
         return nullptr;
     }
 
-    // wpisuje wartoœci wektorów do VertexArray    
+    // wpisuje wartoÅ“ci wektorÃ³w do VertexArray    
     VertexArray construct_lines_based_on_input(Vector2f* tab, int size)
     {
         // just to be safe
@@ -133,7 +133,7 @@ public:
         return lines;
     }
 
-    // otoczka zczytania z pliku, tworzy gotowy do wyœwietlenia VertexArray
+    // otoczka zczytania z pliku, tworzy gotowy do wyÅ“wietlenia VertexArray
     VertexArray construct_lines_from_file(string file_name)
     {
         int size = 0;
@@ -146,7 +146,7 @@ public:
     }
     VertexArray construct_lines_at_random(int how_many)
     {
-        // robimy plik roboczy tmp.txt z przypadkowymi wspó³rzêdnymi, a nastêpnie zczytujemy z niego wczeœniejsz¹ funkcj¹
+        // robimy plik roboczy tmp.txt z przypadkowymi wspÃ³Â³rzÃªdnymi, a nastÃªpnie zczytujemy z niego wczeÅ“niejszÂ¹ funkcjÂ¹
         int x_random = 0;
         int y_random = 0;
 
@@ -229,7 +229,7 @@ public:
 
     void VertexArray_based_on_existing_circle_list(list<CircleShape*>& circle_list, VertexArray* Vertex_tab, PrimitiveType type, bool connecting)
     {
-        // albo tak jak z tym pointerem, zmieniæ wspó³rzêdne coordów --- za du¿o szukania a i tak trzeba zrobiæ nowy obiekt VertexArray
+        // albo tak jak z tym pointerem, zmieniÃ¦ wspÃ³Â³rzÃªdne coordÃ³w --- za duÂ¿o szukania a i tak trzeba zrobiÃ¦ nowy obiekt VertexArray
 
         int size = distance(circle_list.begin(), circle_list.end());
         if (connecting) size++;
@@ -289,7 +289,7 @@ public:
         return distance_y / distance_x;
     }
 
-    // mo¿e znajdê use
+    // moÂ¿e znajdÃª use
     void Passing_function(bool& pass, void (*ptr)())
     {
         if (!pass)
@@ -327,8 +327,8 @@ public:
     {        
         int list_size = distance(l.begin(), l.end());
         VertexArray lines(sf::LinesStrip, list_size * 2);
-        // *2 bo ka¿dy z punktów musi za ka¿dym razem
-        // wracaæ do œrodkowego i do tego innego
+        // *2 bo kaÂ¿dy z punktÃ³w musi za kaÂ¿dym razem
+        // wracaÃ¦ do Å“rodkowego i do tego innego
         int i = 0;
         for (list<CircleShape*>::iterator it = l.begin(); it != l.end(); it++)
         {
@@ -461,7 +461,7 @@ public:
 
     // first x than y
     ////
-    /// TRZEBA JESZCZE MODYFIKOWAÆ POZYCJE Z UWAGI NA ŒRODKE PUNKTU
+    /// TRZEBA JESZCZE MODYFIKOWAÃ† POZYCJE Z UWAGI NA Å’RODKE PUNKTU
     void Save_points_to_file(list<CircleShape*>& circle_list, float how_many_x_slices, float how_many_y_slices)
     {
         Vector2f bottom_left = Mesh_left_corner(circle_list);
@@ -691,20 +691,6 @@ public:
             }
         }
     }
-
-    // TA FUNKCJA JEST NIE POTRZEBNA - BO PO ZMIANIE MIEJSCA TRZEBA NA NOWO TWORZYÆ DRZEWO
-    /*
-    // new
-    void Recalculate_circle_position()
-    {
-        //LOG("before " << this->circle_position.x + this->circle_obj->getRadius() << ". " << this->circle_position.y + this->circle_obj->getRadius())
-        this->circle_position = o.Middle_of_a_circle((this->circle_obj));
-        //LOG("adress      "<<this->circle_obj << " " << this->circle_position.x + this->circle_obj->getRadius() << ". " << this->circle_position.y + this->circle_obj->getRadius())
-
-        if (this->left != nullptr) this->left->Recalculate_circle_position();
-        if (this->right != nullptr) this->right->Recalculate_circle_position();
-    }
-    */
         
     void To_List_Circle_and_Length(Vector2f point_position, list<My_node_and_lenght>& list)
     {
@@ -721,7 +707,7 @@ public:
                 // this->left == nullptr
                 else
                 {
-                    // ostatni check, ¿eby sprawdziæ na pewno wszystkie punkty                    
+                    // ostatni check, Â¿eby sprawdziÃ¦ na pewno wszystkie punkty                    
                     if ((this->parent != nullptr) && (this->parent->right != nullptr))
                     {
                         My_node_and_lenght tmp_(this->parent->right->circle_obj, o.Get_length(this->parent->right->circle_position, point_position));
@@ -737,7 +723,7 @@ public:
                 // this->right == nullptr
                 else
                 {
-                    // ostatni check, ¿eby sprawdziæ na pewno wszystkie punkty
+                    // ostatni check, Â¿eby sprawdziÃ¦ na pewno wszystkie punkty
                     if ((this->parent != nullptr) && (this->parent->left != nullptr))
                     {
                         My_node_and_lenght tmp_(this->parent->left->circle_obj, o.Get_length(this->parent->left->circle_position, point_position));
@@ -757,7 +743,7 @@ public:
                 // this->left == nullptr
                 else
                 {
-                    // ostatni check, ¿eby sprawdziæ na pewno wszystkie punkty
+                    // ostatni check, Â¿eby sprawdziÃ¦ na pewno wszystkie punkty
                     if (this->parent->right != nullptr)
                     {
                         My_node_and_lenght tmp_(this->parent->right->circle_obj, o.Get_length(this->parent->right->circle_position, point_position));
@@ -773,7 +759,7 @@ public:
                 // this->right == nullptr
                 else
                 {
-                    // ostatni check, ¿eby sprawdziæ na pewno wszystkie punkty
+                    // ostatni check, Â¿eby sprawdziÃ¦ na pewno wszystkie punkty
                     if (this->parent->left != nullptr)
                     {
                         My_node_and_lenght tmp_(this->parent->left->circle_obj, o.Get_length(this->parent->left->circle_position, point_position));
