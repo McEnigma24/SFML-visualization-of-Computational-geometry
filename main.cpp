@@ -3,7 +3,7 @@
 // change the target to x64
 // Project -> Properties (last on the list)
 // Configurations: Debug -> Debugging -> Environment -> PATH=S:\Programy Visual Studio\aaa SFML - for Visualization\SFML-2.5.1\bin
-// PATH= gdziekolwiek jest folder bin plików SFML
+// PATH= gdziekolwiek jest folder bin plikÃ³w SFML
 // apply -> ok
 
 string cr, cl, cp;
@@ -68,7 +68,7 @@ int main()
     RenderWindow window(VideoMode(WIDTH, HEIGHT), "C++ is the best");
     window.setFramerateLimit(69);
 
-    // wczeœniejsze z pliku
+    // wczeÅ“niejsze z pliku
     /*
     My_operations o("from_file", LinesStrip);
     VertexArray from_file = o.construct_lines_from_file("input.txt");
@@ -148,7 +148,7 @@ int main()
             // Modes
             switch (chosen)
             {
-                // tworzenie punktów
+                // tworzenie punktÃ³w
                 case 1:
                 {
                     Vector2i localPosition = sf::Mouse::getPosition(window);
@@ -158,12 +158,7 @@ int main()
                     {
                         if (!(localPosition.x < 0 || localPosition.x > WIDTH || localPosition.y < 0 || localPosition.y > HEIGHT))
                         {
-                            o.All_Points_Green(list_circle_points);
-
-                            // CircleShape circle;
-                            // circle.setRadius(CIRCLE_RAD);
-                            // circle.setFillColor(sf::Color::Red);
-                            // circle.setPosition(localPosition.x - CIRCLE_RAD, localPosition.y - CIRCLE_RAD);
+                            o.All_Points_Green(list_circle_points);                            
 
                             CircleShape* circle = new CircleShape;
                             circle->setRadius(CIRCLE_RAD);
@@ -186,7 +181,7 @@ int main()
                         }
                     }
 
-                    // ³aczymy kó³ka liniami biegn¹cymi do œrodka kó³ka, czyœci vertex_list i wstawia tam nowy VertexArray z wykalkulowanymi œrokami kó³ek
+                    // Â³aczymy kÃ³Â³ka liniami biegnÂ¹cymi do Å“rodka kÃ³Â³ka, czyÅ“ci vertex_list i wstawia tam nowy VertexArray z wykalkulowanymi Å“rokami kÃ³Â³ek
                     if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
                     {
                         if (!pass_connecting_points)
@@ -232,7 +227,7 @@ int main()
                         }
                     }
 
-                    // punkt do znalezienia najbli¿szego z innych
+                    // punkt do znalezienia najbliÂ¿szego z innych
                     if (sf::Mouse::isButtonPressed(sf::Mouse::Middle))
                     {
                         if (!(localPosition.x < 0 || localPosition.x > WIDTH || localPosition.y < 0 || localPosition.y > HEIGHT))
@@ -263,7 +258,7 @@ int main()
                     break;
                 }
 
-                // poruszanie punktów strza³kami i myszk¹
+                // poruszanie punktÃ³w strzaÂ³kami i myszkÂ¹
                 case 2:
                 {
                     Vector2i previous = previous_mouse_position;
@@ -279,7 +274,7 @@ int main()
                         float radious;
                         float x, y;
 
-                        // znalaz³ ku³ko o które nam chodzi
+                        // znalazÂ³ kuÂ³ko o ktÃ³re nam chodzi
                         for (list<CircleShape*>::iterator it = list_circle_points.begin(); it != list_circle_points.end(); it++)
                         {
                             tmp = (*it)->getPosition();
@@ -291,7 +286,7 @@ int main()
                         }
                     }
 
-                    // lewym nim ruszacza jeœli kursor jest w jego zasiêgu
+                    // lewym nim ruszacza jeÅ“li kursor jest w jego zasiÃªgu
                     if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
                     {
                         if (p_chosen_circle_for_moving != nullptr)
@@ -325,7 +320,7 @@ int main()
                         float radious;
                         float x, y;
 
-                        // znalaz³ ku³ko o które nam chodzi
+                        // znalazÂ³ kuÂ³ko o ktÃ³re nam chodzi
                         for (list<CircleShape*>::iterator it = list_circle_points.begin(); it != list_circle_points.end(); it++)
                         {
                             tmp = (*it)->getPosition();
@@ -404,7 +399,7 @@ int main()
                 // empty
                 case 3:
                 {
-                    // wczeœniejsze ustawienia do poruszania myszk¹
+                    // wczeÅ“niejsze ustawienia do poruszania myszkÂ¹
                     /*
                     Vector2i previous = previous_mouse_position;
 
@@ -419,7 +414,7 @@ int main()
                         float radious;
                         float x, y;
 
-                        // znalaz³ ku³ko o które nam chodzi
+                        // znalazÂ³ kuÂ³ko o ktÃ³re nam chodzi
                         for (list<CircleShape*>::iterator it = list_circle_points.begin(); it != list_circle_points.end(); it++)
                         {
                             tmp = (*it)->getPosition();
@@ -431,7 +426,7 @@ int main()
                         }
                     }
 
-                    // lewym nim ruszacza jeœli kursor jest w jego zasiêgu
+                    // lewym nim ruszacza jeÅ“li kursor jest w jego zasiÃªgu
                     if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
                     {
                         if (p_chosen_circle_for_moving != nullptr)
@@ -459,7 +454,7 @@ int main()
                     }
                     */
 
-                    // wczeœniejsze porusznie bez aktualizacji punków
+                    // wczeÅ“niejsze porusznie bez aktualizacji punkÃ³w
                     /*
                     Vector2i previous = previous_mouse_position;
 
@@ -473,7 +468,7 @@ int main()
                         float radious;
                         float x, y;
 
-                        // znalaz³ ku³ko o które nam chodzi
+                        // znalazÂ³ kuÂ³ko o ktÃ³re nam chodzi
                         for (list<CircleShape*>::iterator it = list_circle_points.begin(); it != list_circle_points.end(); it++)
                         {
                             tmp = (*it)->getPosition();
@@ -485,7 +480,7 @@ int main()
                         }
                     }
 
-                    // lewym nim ruszacza jeœli kursor jest w jego zasiêgu
+                    // lewym nim ruszacza jeÅ“li kursor jest w jego zasiÃªgu
                     if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
                     {
                         if (p_chosen_circle_for_moving != nullptr)
@@ -588,13 +583,13 @@ int main()
                     system("cls");
                     #endif
 
-                    // wszystkie kó³ka na zielono
+                    // wszystkie kÃ³Â³ka na zielono
                     for (list<CircleShape*>::iterator it = list_circle_points.begin(); it != list_circle_points.end(); it++)
                     {
                         (*it)->setFillColor(Color::Green);
                     }
 
-                    // jeœli coœ by³o wczeœniej to kasujemy to
+                    // jeÅ“li coÅ“ byÂ³o wczeÅ“niej to kasujemy to
                     if (p_main_tree != nullptr)
                     {
                         p_main_tree->Clear();
@@ -620,7 +615,7 @@ int main()
                         (o.Middle_of_a_circle(*p_distance_calculation_circle)));
                     LOG("Function worked");
 
-                    // ustawienie koloru i wypisanie wszystkich wczeœniejszych wêz³ów
+                    // ustawienie koloru i wypisanie wszystkich wczeÅ“niejszych wÃªzÂ³Ã³w
                     if (tmp != nullptr)
                     {
                         int i = 1;
@@ -642,7 +637,7 @@ int main()
                     SLEEP(100);
                 }
             }
-            // Lab 5 - siatka prostok¹tna
+            // Lab 5 - siatka prostokÂ¹tna
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
             {
                 if (!pass_mesh && !list_circle_points.empty())
@@ -705,14 +700,14 @@ int main()
 
 
             // DEBUG
-            // Wspó³rzêdne kó³ek z listy
+            // WspÃ³Â³rzÃªdne kÃ³Â³ek z listy
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))
             {
                 LOG("Circle poitns from list");
                 for (list<CircleShape*>::iterator it = list_circle_points.begin(); it != list_circle_points.end(); it++) LOG(o.Middle_of_a_circle(*it).x << ". " << o.Middle_of_a_circle(*it).y);
                 SLEEP(200);
             }
-            // adresy kó³ek z drzewa
+            // adresy kÃ³Â³ek z drzewa
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::T))
             {
                 if (p_main_tree != nullptr)
