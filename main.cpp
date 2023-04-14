@@ -3,9 +3,10 @@
 // change the target to x64
 // Project -> Properties (last on the list)
 // Configurations: Debug -> Debugging -> Environment -> PATH=S:\Programy Visual Studio\aaa SFML - for Visualization\SFML-2.5.1\bin
-// PATH= gdziekolwiek jest folder bin plikÃ³w SFML
+// PATH= gdziekolwiek jest folder bin plików SFML
 // apply -> ok
 
+#if TREE == 1
 string cr, cl, cp;
 void printBT(string sp, string sn, my_node* v)
 {
@@ -53,22 +54,24 @@ void Show_Tree_comparator(my_node* obj)
     printBT_comparator("", "", obj);
     cout << endl;
 }
-
+#endif
 
 int main()
 {
     srand(time(NULL));
 
+    #if TREE == 1
     // for tree show
     cr = cl = cp = "  ";
     cr[0] = 218; cr[1] = 196;
     cl[0] = 192; cl[1] = 196;
     cp[0] = 179;
+    #endif
 
     RenderWindow window(VideoMode(WIDTH, HEIGHT), "C++ is the best");
     window.setFramerateLimit(69);
 
-    // wczeÅ“niejsze z pliku
+    // wczeœniejsze z pliku
     /*
     My_operations o("from_file", LinesStrip);
     VertexArray from_file = o.construct_lines_from_file("input.txt");
@@ -99,6 +102,7 @@ int main()
     int chosen = 1;
     bool connecting_activated = true;
     int circle_moving_speed = 3;
+    int local_rad = CIRCLE_RAD;
     // ~properties    
 
     // signal circle
@@ -117,12 +121,14 @@ int main()
     // ~Mesh
 
     // used often
-    Operations o;    
+    Operations o;
+    Recalculating recal;
+    Triangulation trian;
     Vector2i previous_mouse_position = (Vector2i(0, 0));
         
     list<CircleShape*> list_circle_points;
     CircleShape* p_chosen_circle_for_moving = nullptr;
-    CircleShape* p_distance_calculation_circle = nullptr;
+    CircleShape* p_distance_calculation_circle = nullptr;    
 
     list<VertexArray> list_mesh_blocks;
     VertexArray* tab_VertexArray_points_in_circle = new VertexArray[VERTEX_ARRAY_SIZE];
@@ -130,7 +136,10 @@ int main()
     // [1] - lines to all points from dcl
     list<Text> list_length_of_distances_dcl;
 
+#if TREE == 1
     my_Tree* p_main_tree = nullptr;
+#endif
+
     // ~used often
 
     // content on off
@@ -138,7 +147,9 @@ int main()
     bool pass_connecting_points = false;
     bool pass_lines_to_all = false;
     bool pass_distance_to_all = false;
+    bool pass_closest_point = false;
     // ~content on off
+       
 
     while (window.isOpen())
     {
@@ -148,7 +159,7 @@ int main()
             // Modes
             switch (chosen)
             {
-                // tworzenie punktÃ³w
+                // tworzenie punktów
                 case 1:
                 {
                     Vector2i localPosition = sf::Mouse::getPosition(window);
@@ -158,12 +169,17 @@ int main()
                     {
                         if (!(localPosition.x < 0 || localPosition.x > WIDTH || localPosition.y < 0 || localPosition.y > HEIGHT))
                         {
-                            o.All_Points_Green(list_circle_points);                            
+                            o.All_Points_Green(list_circle_points);
+
+                            // CircleShape circle;
+                            // circle.setRadius(local_rad);
+                            // circle.setFillColor(sf::Color::Red);
+                            // circle.setPosition(localPosition.x - local_rad, localPosition.y - local_rad);
 
                             CircleShape* circle = new CircleShape;
-                            circle->setRadius(CIRCLE_RAD);
+                            circle->setRadius(local_rad);
                             circle->setFillColor(sf::Color::Red);
-                            circle->setPosition(localPosition.x - CIRCLE_RAD, localPosition.y - CIRCLE_RAD);
+                            circle->setPosition(localPosition.x - local_rad, localPosition.y - local_rad);
 
                             // dodanie do listy                            
                             list_circle_points.push_back(circle);
@@ -171,18 +187,17 @@ int main()
 
                             // Recalculating //
                             {
-                                if (pass_mesh) o.Recalculate_Mesh(list_mesh_blocks, list_circle_points, x_slices, y_slices);
-                                list_length_of_distances_dcl.clear();
-                                if (pass_lines_to_all && p_distance_calculation_circle != nullptr) o.Recalculate_set_VertexArray_for_distance_circle_lines(list_circle_points, tab_VertexArray_points_in_circle, p_distance_calculation_circle);
-                                if (pass_distance_to_all && p_distance_calculation_circle != nullptr) o.Recalcutale_set_text_distance_circle(list_length_of_distances_dcl, list_circle_points, p_distance_calculation_circle, font);
+                                if (pass_mesh) recal.Recalculate_Mesh(list_mesh_blocks, list_circle_points, x_slices, y_slices);
+                                if (pass_lines_to_all && p_distance_calculation_circle != nullptr) recal.Recalculate_set_VertexArray_for_distance_circle_lines(list_circle_points, tab_VertexArray_points_in_circle, p_distance_calculation_circle);
+                                if (pass_distance_to_all && p_distance_calculation_circle != nullptr) recal.Recalculate_set_text_distance_circle(list_length_of_distances_dcl, list_circle_points, p_distance_calculation_circle, font);
                             }
 
                             SLEEP(100);
                         }
                     }
 
-                    // Â³aczymy kÃ³Â³ka liniami biegnÂ¹cymi do Å“rodka kÃ³Â³ka, czyÅ“ci vertex_list i wstawia tam nowy VertexArray z wykalkulowanymi Å“rokami kÃ³Â³ek
-                    if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
+                    // ³aczymy kó³ka liniami biegn¹cymi do œrodka kó³ka, czyœci vertex_list i wstawia tam nowy VertexArray z wykalkulowanymi œrokami kó³ek
+                    else if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
                     {
                         if (!pass_connecting_points)
                         {
@@ -227,8 +242,8 @@ int main()
                         }
                     }
 
-                    // punkt do znalezienia najbliÂ¿szego z innych
-                    if (sf::Mouse::isButtonPressed(sf::Mouse::Middle))
+                    // punkt do znalezienia najbli¿szego z innych
+                    else if (sf::Mouse::isButtonPressed(sf::Mouse::Middle))
                     {
                         if (!(localPosition.x < 0 || localPosition.x > WIDTH || localPosition.y < 0 || localPosition.y > HEIGHT))
                         {                            
@@ -238,17 +253,16 @@ int main()
                                 delete p_distance_calculation_circle;
 
                             CircleShape* circle = new CircleShape();
-                            circle->setRadius(CIRCLE_RAD);
+                            circle->setRadius(local_rad);
                             circle->setFillColor(sf::Color::Yellow);
-                            circle->setPosition(localPosition.x - CIRCLE_RAD, localPosition.y - CIRCLE_RAD);
+                            circle->setPosition(localPosition.x - local_rad, localPosition.y - local_rad);
 
                             p_distance_calculation_circle = circle;
 
                             // Recalculating //
-                            {
-                                list_length_of_distances_dcl.clear();
-                                if (pass_lines_to_all && p_distance_calculation_circle != nullptr) o.Recalculate_set_VertexArray_for_distance_circle_lines(list_circle_points, tab_VertexArray_points_in_circle, p_distance_calculation_circle);
-                                if (pass_distance_to_all && p_distance_calculation_circle != nullptr) o.Recalcutale_set_text_distance_circle(list_length_of_distances_dcl, list_circle_points, p_distance_calculation_circle, font);
+                            {                                
+                                if (pass_lines_to_all && p_distance_calculation_circle != nullptr) recal.Recalculate_set_VertexArray_for_distance_circle_lines(list_circle_points, tab_VertexArray_points_in_circle, p_distance_calculation_circle);
+                                if (pass_distance_to_all && p_distance_calculation_circle != nullptr) recal.Recalculate_set_text_distance_circle(list_length_of_distances_dcl, list_circle_points, p_distance_calculation_circle, font);
                             }
 
                             SLEEP();
@@ -258,7 +272,7 @@ int main()
                     break;
                 }
 
-                // poruszanie punktÃ³w strzaÂ³kami i myszkÂ¹
+                // poruszanie punktów strza³kami i myszk¹
                 case 2:
                 {
                     Vector2i previous = previous_mouse_position;
@@ -274,7 +288,7 @@ int main()
                         float radious;
                         float x, y;
 
-                        // znalazÂ³ kuÂ³ko o ktÃ³re nam chodzi
+                        // znalaz³ ku³ko o które nam chodzi
                         for (list<CircleShape*>::iterator it = list_circle_points.begin(); it != list_circle_points.end(); it++)
                         {
                             tmp = (*it)->getPosition();
@@ -286,8 +300,8 @@ int main()
                         }
                     }
 
-                    // lewym nim ruszacza jeÅ“li kursor jest w jego zasiÃªgu
-                    if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+                    // lewym nim ruszacza
+                    else if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
                     {
                         if (p_chosen_circle_for_moving != nullptr)
                         {
@@ -309,38 +323,26 @@ int main()
                                 p_chosen_circle_for_moving->setPosition(circle_position);
                             }
 
-                            o.VertexArray_based_on_existing_circle_list(list_circle_points, tab_VertexArray_points_in_circle, sf::LinesStrip, connecting_activated);
+                            // o.Recalculat_lines_VertexArray_based_on_existing_circle_list(list_circle_points, tab_VertexArray_points_in_circle, sf::LinesStrip, connecting_activated);                            
                         }
                     }
 
-                    /*
-                    if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+                    // zmiana rozmiarów punktów
+                    else if (event.type == sf::Event::MouseWheelMoved)
                     {
-                        Vector2f tmp;
-                        float radious;
-                        float x, y;
+                        // LOG("delta: " << event.mouseWheel.delta);
+                        if (event.mouseWheel.delta > 0) local_rad++;
+                        else local_rad--;
 
-                        // znalazÂ³ kuÂ³ko o ktÃ³re nam chodzi
+                        // Circle update
                         for (list<CircleShape*>::iterator it = list_circle_points.begin(); it != list_circle_points.end(); it++)
-                        {
-                            tmp = (*it)->getPosition();
-                            radious = (*it)->getRadius();
-                            x = tmp.x + radious / 2;
-                            y = tmp.y + radious / 2;
-
-                            if ((float)radious >= o.Get_length(localPosition.x, localPosition.y, x, y)) p_chosen_circle_for_moving = *it;
-                        }
+                            (*it)->setRadius(local_rad);
+                        if(p_distance_calculation_circle) (p_distance_calculation_circle)->setRadius(local_rad);
                     }
-
-                    // usuwanie chosen_point EMPTY
-                    if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
-                    {
-
-                    }
-                    */
+                    
 
                     // zmiana pozycji p_chosen_circle_for_moving + rekalkulacja vertex_list i VertexArray_tab
-                    if ((p_chosen_circle_for_moving != nullptr) && (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down)
+                    else if ((p_chosen_circle_for_moving != nullptr) && (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down)
                         || sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)))
                     {
                         // tutaj dynamiczne obliczanie coordinet_list
@@ -381,135 +383,25 @@ int main()
                             p_chosen_circle_for_moving->setPosition(previous);
                         }
 
-                        o.VertexArray_based_on_existing_circle_list(list_circle_points, tab_VertexArray_points_in_circle, sf::LinesStrip, connecting_activated);
+                        recal.Recalculat_lines_VertexArray_based_on_existing_circle_list(list_circle_points, tab_VertexArray_points_in_circle, sf::LinesStrip, connecting_activated);
                     }
 
 
                     // Recalculating //
-                    {
-                        if (pass_mesh) o.Recalculate_Mesh(list_mesh_blocks, list_circle_points, x_slices, y_slices);
-                        list_length_of_distances_dcl.clear();
-                        if (pass_lines_to_all && p_distance_calculation_circle != nullptr) o.Recalculate_set_VertexArray_for_distance_circle_lines(list_circle_points, tab_VertexArray_points_in_circle, p_distance_calculation_circle);
-                        if (pass_distance_to_all && p_distance_calculation_circle != nullptr) o.Recalcutale_set_text_distance_circle(list_length_of_distances_dcl, list_circle_points, p_distance_calculation_circle, font);
+                    {                        
+                        if (pass_connecting_points) recal.Recalculat_lines_VertexArray_based_on_existing_circle_list(list_circle_points, tab_VertexArray_points_in_circle, sf::LinesStrip, connecting_activated);
+                        if (pass_mesh) recal.Recalculate_Mesh(list_mesh_blocks, list_circle_points, x_slices, y_slices);
+                        if (pass_lines_to_all && p_distance_calculation_circle != nullptr) recal.Recalculate_set_VertexArray_for_distance_circle_lines(list_circle_points, tab_VertexArray_points_in_circle, p_distance_calculation_circle);
+                        if (pass_distance_to_all && p_distance_calculation_circle != nullptr) recal.Recalculate_set_text_distance_circle(list_length_of_distances_dcl, list_circle_points, p_distance_calculation_circle, font);
                     }
 
                     break;
                 }
 
-                // empty
+                // Triangulations
                 case 3:
                 {
-                    // wczeÅ“niejsze ustawienia do poruszania myszkÂ¹
-                    /*
-                    Vector2i previous = previous_mouse_position;
 
-                    Vector2i localPosition = sf::Mouse::getPosition(window);
-                    previous_mouse_position = localPosition;
-
-
-                    // prawym zaznaczasz punkt
-                    if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
-                    {
-                        Vector2f tmp;
-                        float radious;
-                        float x, y;
-
-                        // znalazÂ³ kuÂ³ko o ktÃ³re nam chodzi
-                        for (list<CircleShape*>::iterator it = list_circle_points.begin(); it != list_circle_points.end(); it++)
-                        {
-                            tmp = (*it)->getPosition();
-                            radious = (*it)->getRadius();
-                            x = tmp.x + radious / 2;
-                            y = tmp.y + radious / 2;
-
-                            if ((float)radious >= o.Get_length(localPosition.x, localPosition.y, x, y)) p_chosen_circle_for_moving = *it;
-                        }
-                    }
-
-                    // lewym nim ruszacza jeÅ“li kursor jest w jego zasiÃªgu
-                    if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
-                    {
-                        if (p_chosen_circle_for_moving != nullptr)
-                        {
-                            Vector2f tmp = p_chosen_circle_for_moving->getPosition();
-
-                            //LOG("Pressed ");
-                            //LOG(o.Get_length(localPosition.x, localPosition.y, tmp.x, tmp.y));
-                            //if (p_chosen_circle_for_moving->getRadius() * 2 >= Get_length(localPosition.x, localPosition.y, tmp.x + p_chosen_circle_for_moving->getRadius(), tmp.y + p_chosen_circle_for_moving->getRadius()))
-                            //{
-                                //LOG("Pressed in the middle of a circle");
-
-                            Vector2f circle_position;
-                            if (p_chosen_circle_for_moving != nullptr)
-                            {
-                                circle_position = p_chosen_circle_for_moving->getPosition();
-                                circle_position.x += (localPosition.x - previous.x); //LOG("x: " + (localPosition.x - previous.x));
-                                circle_position.y += (localPosition.y - previous.y); //LOG("x: " + (localPosition.y - previous.y));
-
-                                p_chosen_circle_for_moving->setPosition(circle_position);
-                            }
-
-                            o.VertexArray_based_on_existing_circle_list(list_circle_points, tab_VertexArray_points_in_circle, sf::LinesStrip, connecting_activated);
-                        }
-                    }
-                    */
-
-                    // wczeÅ“niejsze porusznie bez aktualizacji punkÃ³w
-                    /*
-                    Vector2i previous = previous_mouse_position;
-
-                    Vector2i localPosition = sf::Mouse::getPosition(window);
-                    previous_mouse_position = localPosition;
-
-                    // prawym zaznaczasz punkt
-                    if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
-                    {
-                        Vector2f tmp;
-                        float radious;
-                        float x, y;
-
-                        // znalazÂ³ kuÂ³ko o ktÃ³re nam chodzi
-                        for (list<CircleShape*>::iterator it = list_circle_points.begin(); it != list_circle_points.end(); it++)
-                        {
-                            tmp = (*it)->getPosition();
-                            radious = (*it)->getRadius();
-                            x = tmp.x + radious / 2;
-                            y = tmp.y + radious / 2;
-
-                            if ((float)radious >= o.Get_length(localPosition.x, localPosition.y, x, y)) p_chosen_circle_for_moving = *it;
-                        }
-                    }
-
-                    // lewym nim ruszacza jeÅ“li kursor jest w jego zasiÃªgu
-                    if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
-                    {
-                        if (p_chosen_circle_for_moving != nullptr)
-                        {
-                            Vector2f tmp = p_chosen_circle_for_moving->getPosition();
-
-                            //LOG("Pressed ");
-                            //LOG(o.Get_length(localPosition.x, localPosition.y, tmp.x, tmp.y));
-                            //if (p_chosen_circle_for_moving->getRadius() * 2 >= Get_length(localPosition.x, localPosition.y, tmp.x + p_chosen_circle_for_moving->getRadius(), tmp.y + p_chosen_circle_for_moving->getRadius()))
-                            //{
-                                //LOG("Pressed in the middle of a circle");                                
-
-                            Vector2f circle_position;
-                            if (p_chosen_circle_for_moving != nullptr)
-                            {
-                                circle_position = p_chosen_circle_for_moving->getPosition();
-                                circle_position.x += (localPosition.x - previous.x); //LOG("x: " + (localPosition.x - previous.x));
-                                circle_position.y += (localPosition.y - previous.y); //LOG("x: " + (localPosition.y - previous.y));
-
-                                p_chosen_circle_for_moving->setPosition(circle_position);
-                            }
-
-                            // czyszczenia siatki
-                            delete[] tab_VertexArray_points_in_circle;
-                            tab_VertexArray_points_in_circle = new VertexArray[VERTEX_ARRAY_SIZE];
-                            //o.VertexArray_based_on_existing_circle_list(list_circle_points, tab_VertexArray_points_in_circle, sf::LinesStrip, connecting_activated);
-                        }
-                    }
-                    */
 
                     break;
                 }
@@ -547,12 +439,14 @@ int main()
                 if (p_distance_calculation_circle != nullptr) delete p_distance_calculation_circle;
                 p_distance_calculation_circle = nullptr;
 
-                if (p_main_tree != nullptr)
-                {
-                    p_main_tree->Clear();
-                    delete p_main_tree;
-                    p_main_tree = nullptr;
-                }
+                #if TREE == 1
+                    if (p_main_tree != nullptr)
+                    {
+                        p_main_tree->Clear();
+                        delete p_main_tree;
+                        p_main_tree = nullptr;
+                    }
+                #endif
             }
             // connect
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::C))
@@ -577,73 +471,85 @@ int main()
             // nearest neighbour            
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
             {
-                if (p_distance_calculation_circle)
+                if (pass_closest_point == false)
                 {
-                    #ifdef MY_DEBUG
-                    system("cls");
-                    #endif
+                    pass_closest_point = true;
 
-                    // wszystkie kÃ³Â³ka na zielono
-                    for (list<CircleShape*>::iterator it = list_circle_points.begin(); it != list_circle_points.end(); it++)
+                    /*
+                    if (p_distance_calculation_circle)
                     {
-                        (*it)->setFillColor(Color::Green);
-                    }
+                        #ifdef DEBUG
+                            system("cls");
+                        #endif
 
-                    // jeÅ“li coÅ“ byÂ³o wczeÅ“niej to kasujemy to
-                    if (p_main_tree != nullptr)
-                    {
-                        p_main_tree->Clear();
-                        delete p_main_tree;
-                        p_main_tree = nullptr;
-                    }
-
-                    // tworzymy nowe i dodajemy z circle_list
-                    p_main_tree = new my_Tree();
-                    int element = 1;
-                    for (list<CircleShape*>::iterator it = list_circle_points.begin(); it != list_circle_points.end(); it++)
-                    {
-                        p_main_tree->Add(*it);
-                        LOG(element << "added");
-                        element++;
-                    }
-                    cout << "Tree build" << endl;
-
-                    LOG("Q Pressed - Searching for nearest neighbour");
-                    LOG("calculation circle position: " << o.Middle_of_a_circle(*p_distance_calculation_circle).x << ". " << o.Middle_of_a_circle(*p_distance_calculation_circle).y);
-
-                    CircleShape* tmp = p_main_tree->Return_pointer_to_closest_circle(
-                        (o.Middle_of_a_circle(*p_distance_calculation_circle)));
-                    LOG("Function worked");
-
-                    // ustawienie koloru i wypisanie wszystkich wczeÅ“niejszych wÃªzÂ³Ã³w
-                    if (tmp != nullptr)
-                    {
-                        int i = 1;
-                        LOG("iterating thourgh list_circle_points");
-                        for (list<CircleShape*>::iterator it = list_circle_points.begin(); it != list_circle_points.end(); it++)
+                        #if TREE == 1
+                        // jeœli coœ by³o wczeœniej to kasujemy to
+                        if (p_main_tree != nullptr)
                         {
-                            LOG(i << " adress:   " << *it << " " << (*it)->getPosition().x + (*it)->getRadius() << ". " << (*it)->getPosition().y + (*it)->getRadius());
-                            i++;
+                            p_main_tree->Clear();
+                            delete p_main_tree;
+                            p_main_tree = nullptr;
                         }
 
-                        LOG("");
-                        LOG("tmp adress: " << tmp << " " << tmp->getPosition().x + (tmp)->getRadius() << ". " << tmp->getPosition().y + (tmp)->getRadius());
+                        // tworzymy nowe i dodajemy z circle_list
+                        p_main_tree = new my_Tree();
+                        int element = 1;
+                        for (list<CircleShape*>::iterator it = list_circle_points.begin(); it != list_circle_points.end(); it++)
+                        {
+                            p_main_tree->Add(*it);
+                            LOG(element << "added");
+                            element++;
+                        }
+                        cout << "Tree build" << endl;
 
-                        tmp->setFillColor(Color::Magenta);
-                        LOG("Color set");
+                        LOG("Q Pressed - Searching for nearest neighbour");
+                        LOG("calculation circle position: " << o.Middle_of_a_circle(*p_distance_calculation_circle).x << ". " << o.Middle_of_a_circle(*p_distance_calculation_circle).y);
+
+                        CircleShape* tmp = p_main_tree->Return_pointer_to_closest_circle(
+                            (o.Middle_of_a_circle(*p_distance_calculation_circle)));
+                        LOG("Function worked");
+
+                        // ustawienie koloru i wypisanie wszystkich wczeœniejszych wêz³ów
+                        if (tmp != nullptr)
+                        {
+                            int i = 1;
+                            LOG("iterating thourgh list_circle_points");
+                            for (list<CircleShape*>::iterator it = list_circle_points.begin(); it != list_circle_points.end(); it++)
+                            {
+                                LOG(i << " adress:   " << *it << " " << (*it)->getPosition().x + (*it)->getRadius() << ". " << (*it)->getPosition().y + (*it)->getRadius());
+                                i++;
+                            }
+
+                            LOG("");
+                            LOG("tmp adress: " << tmp << " " << tmp->getPosition().x + (tmp)->getRadius() << ". " << tmp->getPosition().y + (tmp)->getRadius());
+
+                            tmp->setFillColor(Color::Magenta);
+                            LOG("Color set");
+                        }
+                        else LOG("RETURNED NULL");
+
+                        SLEEP(100);
+                        #else                    
+                            // o.Recalculate_closest_neightbour(list_circle_points, p_distance_calculation_circle);
+                        #endif
                     }
-                    else LOG("RETURNED NULL");
-
-                    SLEEP(100);
+                    */
                 }
+                else
+                {
+                    o.All_Points_Green(list_circle_points);
+                    pass_closest_point = false;
+                }
+
+                SLEEP(150);
             }
-            // Lab 5 - siatka prostokÂ¹tna
+            // Lab 5 - siatka prostok¹tna
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
             {
                 if (!pass_mesh && !list_circle_points.empty())
                 {
                     pass_mesh = true;
-                    o.Recalculate_Mesh(list_mesh_blocks, list_circle_points, x_slices, y_slices);
+                    recal.Recalculate_Mesh(list_mesh_blocks, list_circle_points, x_slices, y_slices);
 
                     LOG("Mesh complete");
                     SLEEP(100);
@@ -663,7 +569,7 @@ int main()
                     {
                         pass_lines_to_all = true;
 
-                        o.Recalculate_set_VertexArray_for_distance_circle_lines
+                        recal.Recalculate_set_VertexArray_for_distance_circle_lines
                         (list_circle_points, tab_VertexArray_points_in_circle, p_distance_calculation_circle);
 
                         SLEEP(100);
@@ -684,7 +590,7 @@ int main()
                     {
                         pass_distance_to_all = true;
 
-                        o.Recalcutale_set_text_distance_circle(list_length_of_distances_dcl, list_circle_points, 
+                        recal.Recalculate_set_text_distance_circle(list_length_of_distances_dcl, list_circle_points,
                             p_distance_calculation_circle , font);
 
                         SLEEP(100);
@@ -700,25 +606,27 @@ int main()
 
 
             // DEBUG
-            // WspÃ³Â³rzÃªdne kÃ³Â³ek z listy
+            // Wspó³rzêdne kó³ek z listy
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))
             {
                 LOG("Circle poitns from list");
                 for (list<CircleShape*>::iterator it = list_circle_points.begin(); it != list_circle_points.end(); it++) LOG(o.Middle_of_a_circle(*it).x << ". " << o.Middle_of_a_circle(*it).y);
                 SLEEP(200);
             }
-            // adresy kÃ³Â³ek z drzewa
+            // adresy kó³ek z drzewa
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::T))
             {
-                if (p_main_tree != nullptr)
-                {
-                    LOG("Tree structure");
-                    p_main_tree->Show_tree_structure();
+                #if TREE == 1
+                    if (p_main_tree != nullptr)
+                    {
+                        LOG("Tree structure");
+                        p_main_tree->Show_tree_structure();
 
-                    Show_Tree(p_main_tree->Get_root());
-                    Show_Tree_comparator(p_main_tree->Get_root());
-                    SLEEP(200);
-                }
+                        Show_Tree(p_main_tree->Get_root());
+                        Show_Tree_comparator(p_main_tree->Get_root());
+                        SLEEP(200);
+                    }
+                #endif
             }
             // ~DEBUG
 
@@ -761,7 +669,7 @@ int main()
                 window.draw(*p_distance_calculation_circle);
 
             // point inside circles
-            if (pass_connecting_points) 
+            if (pass_connecting_points)
                 window.draw(tab_VertexArray_points_in_circle[0]);
 
             // lines to all points
@@ -769,9 +677,15 @@ int main()
                 window.draw(tab_VertexArray_points_in_circle[1]);
 
             // distances to all points list_length_of_distances_dcl
-            if (pass_distance_to_all) 
+            if (pass_distance_to_all)
                 for (list<Text>::iterator it = list_length_of_distances_dcl.begin(); it != list_length_of_distances_dcl.end(); it++)
                     window.draw(*it);
+
+            // Marking closest point
+            if (pass_closest_point && p_distance_calculation_circle)
+                recal.Recalculate_closest_neightbour(list_circle_points, p_distance_calculation_circle);
+            
+
 
             // mesh lines
             if (pass_mesh) 
