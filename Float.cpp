@@ -1,5 +1,5 @@
 #pragma once
-#include "header.h"
+#include "Header.h"
 
 float Float::Get_y()
 {
@@ -27,6 +27,11 @@ Float::Float(int yy, bool recal_y)
     if (recal_y) y = (float)REC(yy);
     else y = (float)yy;
 }
+Float::Float(Float yy, bool recal_y)
+{
+    if (recal_y) y = (float)REC(yy.Get_y());
+    else y = yy.Get_y();
+}
 Float& Float::operator=(float yy)
 {
     y = yy;
@@ -42,4 +47,21 @@ void Float::operator-=(float sub)
 {
     //LOG("Float -= operator");
     y += sub;
+}
+
+bool Float::operator<(const Float& other)
+{
+    return (this->y < other.y);
+}
+bool Float::operator<=(const Float& other)
+{
+    return (this->y <= other.y);
+}
+bool Float::operator>(const Float& other)
+{
+    return (this->y > other.y);
+}
+bool Float::operator>=(const Float& other)
+{
+    return (this->y >= other.y);
 }

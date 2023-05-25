@@ -1,8 +1,8 @@
 #pragma once
-#include "header.h"
+#include "Header.h"
 
 /// TRZEBA JESZCZE MODYFIKOWAÆ POZYCJE Z UWAGI NA ŒRODEK PUNKTU
-void Mesh::Save_points_to_file(list<CircleShape*>& circle_list, float how_many_x_slices, float how_many_y_slices)
+void Mesh::Save_points_to_file(vector<myCircle>& circle_list, float how_many_x_slices, float how_many_y_slices)
 {
     Vector2f bottom_left = Mesh_left_corner(circle_list);
     Vector2f upper_right = Mesh_right_corner(circle_list);
@@ -19,7 +19,7 @@ void Mesh::Save_points_to_file(list<CircleShape*>& circle_list, float how_many_x
     LOG("jumper x " << x_jumper);
     LOG("jumper y " << y_jumper);
 
-    ofstream FILE("_input/_mesh/mesh.txt");
+    ofstream FILE(path::mesh + "mesh.txt");
 
     for (float i = bottom_left.x; i <= upper_right.x; i += x_jumper)
     {
@@ -30,7 +30,7 @@ void Mesh::Save_points_to_file(list<CircleShape*>& circle_list, float how_many_x
     }
 }
 // save in blocks        
-void Mesh::Save_points_to_file_blocks(const list<CircleShape*>& circle_list, float how_many_x_slices, float how_many_y_slices)
+void Mesh::Save_points_to_file_blocks(const vector<myCircle>& circle_list, float how_many_x_slices, float how_many_y_slices)
 {
     Vector2f bottom_left = Mesh_left_corner(circle_list);
     Vector2f upper_right = Mesh_right_corner(circle_list);
@@ -47,14 +47,14 @@ void Mesh::Save_points_to_file_blocks(const list<CircleShape*>& circle_list, flo
     LOG("jumper x " << x_jumper);
     LOG("jumper y " << y_jumper);
 
-    ofstream FILE("_input/_mesh/list_mesh_blocks.txt");
+    ofstream FILE(path::mesh + "list_mesh_blocks.txt");
 
     int block_count = 1;
     for (float i = bottom_left.x; i < upper_right.x; i += x_jumper)
     {
         LOG("i: " << i << "   limit: " << upper_right.x);
 
-        if (approximatelyEqual(i, upper_right.x, 0.01)) continue;
+        if (approximatelyEqual(i, upper_right.x, (float)0.01)) continue;
 
         for (float j = bottom_left.y; j > upper_right.y; j -= y_jumper)
         {
@@ -90,7 +90,7 @@ void Mesh::Visualize_Mesh(list<VertexArray>& list_mesh_blocks)
     }
     */
 
-    ifstream FILE("_input/_mesh/list_mesh_blocks.txt");
+    ifstream FILE(path::mesh + "list_mesh_blocks.txt");
 
     string block; int block_number;
     float x, y;

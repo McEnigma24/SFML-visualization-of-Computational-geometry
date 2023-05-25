@@ -1,9 +1,14 @@
 #pragma once
-#include "header.h"
+#include "Header.h"
 
 // Pojedynczy node jakby drzewa 4, gdzie ka¿dy ma 4 nody
 
-QuadTree::quad_entry::quad_entry(Limits obj, int** t, int& counter, list<VertexArray>& line_list, int& x_offset, int& y_offset)
+QuadTree::quad_coordinets_to_file::quad_coordinets_to_file()
+    :up_left(false), up_right(false), down_left(false), down_right(false), m_id(0)
+{
+}
+
+QuadTree::quad_entry::quad_entry(Limits obj, int** t, int& counter, list<VertexArray>& line_list, list<QuadTree::quad_coordinets_to_file>& list_coordinets, int& x_offset, int& y_offset)
 {
     counter++;
     //cout << counter << endl;
@@ -13,13 +18,22 @@ QuadTree::quad_entry::quad_entry(Limits obj, int** t, int& counter, list<VertexA
     up_right = nullptr;
     down_left = nullptr;
     down_right = nullptr;
-
-
+    
     // Adding to list
     Operations o;
 
     //LOG( endl << "Limits");
     line_list.push_back(o.Cross_with_lines___with_limits(obj, x_offset, y_offset));
+
+    QuadTree::quad_coordinets_to_file coordinets;
+
+    coordinets.m_id = counter;
+    coordinets.up_left = obj.getCoordinetsCorner_UpLeft(false);
+    coordinets.up_right = obj.getCoordinetsCorner_UpRight(false);
+    coordinets.down_left = obj.getCoordinetsCorner_DownLeft(false);
+    coordinets.down_right = obj.getCoordinetsCorner_DownRight(false);
+
+    list_coordinets.push_back(coordinets);
     //LOG("       "); obj.Print();
     //cout << "offset "; obj.Print_offset(x_offset, y_offset);
 
@@ -34,28 +48,28 @@ QuadTree::quad_entry::quad_entry(Limits obj, int** t, int& counter, list<VertexA
         {
             //cout << "up left\n";
             //obj.Get_up_left().Print();                    
-            up_left = new quad_entry(obj.Get_up_left(), t, counter, line_list, x_offset, y_offset);
+            up_left = new quad_entry(obj.Get_up_left(), t, counter, line_list, list_coordinets, x_offset, y_offset);
         }
 
         // up right
         {
             //cout << "up right\n";
             //obj.Get_up_right().Print();
-            up_right = new quad_entry(obj.Get_up_right(), t, counter, line_list, x_offset, y_offset);
+            up_right = new quad_entry(obj.Get_up_right(), t, counter, line_list, list_coordinets, x_offset, y_offset);
         }
 
         // down left
         {
             //cout << "down left\n";
             //obj.Get_down_left().Print();
-            down_left = new quad_entry(obj.Get_down_left(), t, counter, line_list, x_offset, y_offset);
+            down_left = new quad_entry(obj.Get_down_left(), t, counter, line_list, list_coordinets, x_offset, y_offset);
         }
 
         // down right
         {
             //cout << "down right\n";
             //obj.Get_down_right().Print();
-            down_right = new quad_entry(obj.Get_down_right(), t, counter, line_list, x_offset, y_offset);
+            down_right = new quad_entry(obj.Get_down_right(), t, counter, line_list, list_coordinets, x_offset, y_offset);
         }
     }
 }
@@ -108,6 +122,7 @@ void QuadTree::quad_entry::Delete_All()
 }
 
 
+
 QuadTree::QuadTree(string path, int x_off, int y_off)
 {
     x_offset = x_off; y_offset = y_off;
@@ -154,28 +169,32 @@ void QuadTree::Start_Quadding()
 {
     int counter = 0;
     lista_z_liniami_do_wyswitlania.clear();
+    list_quad_coordinets.clear();
 
     // Drawing BIG rectangle
     {
         Vector2f tab[4];
-        tab[0] = Vector2f(x_offset, y_offset);
-        tab[1] = Vector2f(j_stop + x_offset, y_offset);
-        tab[2] = Vector2f(j_stop + x_offset, i_stop + y_offset);
-        tab[3] = Vector2f(x_offset, i_stop + y_offset);
+        tab[0] = Vector2f(static_cast<float>(x_offset), static_cast<float>(y_offset));
+        tab[1] = Vector2f(static_cast<float>(j_stop + x_offset), static_cast<float>(y_offset));
+        tab[2] = Vector2f(static_cast<float>(j_stop + x_offset), static_cast<float>(i_stop + y_offset));
+        tab[3] = Vector2f(static_cast<float>(x_offset), static_cast<float>(i_stop + y_offset));
 
         Operations o;
         VertexArray rectangle = o.Draw_a_rectangle(tab, Color::Yellow);
         lista_z_liniami_do_wyswitlania.push_back(rectangle);
     }
 
-    first = new quad_entry(Limits(0, i_stop, 0, j_stop), tab, counter, lista_z_liniami_do_wyswitlania, x_offset, y_offset);
+    first = new quad_entry(Limits(0, i_stop, 0, j_stop), tab, counter, lista_z_liniami_do_wyswitlania, list_quad_coordinets, x_offset, y_offset);
     //cout << "quading finished" << endl;
-
-
+    
     // wyœwietlamy cross_lines__with_limits
     // na ka¿dym nodzie --- i obramowania do tego g³ównego
 
     // t¹ macierz robimy translacje indexów na myVector
     // *myvector do Cross_with_lines___with_limits ¿eby wiedzia³ sk¹d rysowaæ
 }
-list<VertexArray>& QuadTree::Get_List_for_visualization() { return lista_z_liniami_do_wyswitlania; }
+list<VertexArray> QuadTree::getListForVisualization() { return lista_z_liniami_do_wyswitlania; }
+void QuadTree::saveCoordinetsToFile() 
+{
+    tutaj ju¿ zapisuje z listy do pliku
+}

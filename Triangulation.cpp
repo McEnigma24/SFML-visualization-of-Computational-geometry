@@ -1,5 +1,5 @@
 #pragma once
-#include "header.h"
+#include "Header.h"
 
 #define howToCheckFrequency 0
 // 0 ---> map WORKING WELL
@@ -79,13 +79,13 @@ bool Triangulation::checkIfPointIsInTriangle(Vector2f* triangle_points, Vector2f
 
     return true;
 }
-bool Triangulation::checkIfAllPointsAreInTriangle(Vector2f t_left, Vector2f t_right, Vector2f t_up, list<CircleShape*>& lpoints)
+bool Triangulation::checkIfAllPointsAreInTriangle(Vector2f t_left, Vector2f t_right, Vector2f t_up, vector<myCircle>& lpoints)
 {
     Vector2f tab[3];   tab[0] = t_left; tab[1] = t_right; tab[2] = t_up;
 
-    for (list<CircleShape*>::iterator it = lpoints.begin(); it != lpoints.end(); it++)
+    for (vector<myCircle>::iterator it = lpoints.begin(); it != lpoints.end(); it++)
     {
-        if (!checkIfPointIsInTriangle(tab, getMiddle(*it))) return false;
+        if (!checkIfPointIsInTriangle(tab, (*it).getMiddle())) return false;
     }
 
     return true;
@@ -93,7 +93,7 @@ bool Triangulation::checkIfAllPointsAreInTriangle(Vector2f t_left, Vector2f t_ri
 
 
 // Super Triangle
-Triangle Triangulation::createSuperTriangle(list<CircleShape*>& lpoints)
+Triangle Triangulation::createSuperTriangle(vector<myCircle>& lpoints)
 {
     Triangle res;
         
@@ -122,11 +122,11 @@ Vector2f Triangulation::sinMiddleOfCircle(Triangle t)
 
     t.getAngles();
 
-    res.x = ( (((t.A.x * sin(2 * t.Aangle))) + ((t.B.x * sin(2 * t.Bangle))) + ((t.C.x * sin(2 * t.Cangle))))
-        /    ( sin(2 * t.Aangle) + sin(2 * t.Bangle) + sin(2 * t.Cangle) ));
+    res.x = ( (((t.A.x * static_cast<float>(sin(2 * t.Aangle)))) + ((t.B.x * static_cast<float>(sin(2 * t.Bangle)))) + ((t.C.x * static_cast<float>(sin(2 * t.Cangle)))))
+        /    (static_cast<float>(sin(2 * t.Aangle)) + static_cast<float>(sin(2 * t.Bangle)) + static_cast<float>(sin(2 * t.Cangle)) ));
 
-    res.y = ((((t.A.y * sin(2 * t.Aangle))) + ((t.B.y * sin(2 * t.Bangle))) + ((t.C.y * sin(2 * t.Cangle))))
-        / (sin(2 * t.Aangle) + sin(2 * t.Bangle) + sin(2 * t.Cangle)));
+    res.y = ((((t.A.y * static_cast<float>(sin(2 * t.Aangle)))) + ((t.B.y * static_cast<float>(sin(2 * t.Bangle)))) + ((t.C.y * static_cast<float>(sin(2 * t.Cangle)))))
+        / (static_cast<float>(sin(2 * t.Aangle)) + static_cast<float>(sin(2 * t.Bangle)) + static_cast<float>(sin(2 * t.Cangle))));
 
     return *res;
 }
@@ -183,12 +183,16 @@ void Triangulation::newTriangles(list<Triangle>& originalTriangles, list<Triangl
             map[l3]++;
         }
     
+        
         // teraz z niepowtarzaj¹cych siê lini tworzymy trójk¹ty i dodajemy do originalTriangles
         for (auto& m : map)
             if (m.second == 1)
             {
-                //cout << "hittttttttttttt" << endl;
-                originalTriangles.emplace_back(m.first.point1, m.first.point2, newPoint);
+                Triangle t(m.first.point1, m.first.point2, newPoint);
+                
+
+
+                originalTriangles.push_back(t);
             }
     #endif   
 
@@ -240,29 +244,29 @@ void Triangulation::removeTrianglesCommonTo(list<Triangle>& originalTriangles, T
 }
 
 
-// Delaunay Triangulation
-list<Triangle> Triangulation::triangulationDelaunay(list<CircleShape*>& lpoints)
+// Delaunay Triangulation //
+list<Triangle> Triangulation::triangulationDelaunay(vector<myCircle>& lpoints)
 {
     BEN(ScopeTimer main_t("whole triangulation", ben::trinagulation, 1);)
+    INFO(ScopeInfo info("Triangles Position"))
 
     list<Triangle> original_Triangles;      list<Triangle> bad_Triangles;
 
     Triangle Super_Triangle;
     {
         BEN(ScopeTimer t("super triangle", ben::trinagulation);)
-        Super_Triangle = createSuperTriangle(lpoints);
+            Super_Triangle = createSuperTriangle(lpoints);
         original_Triangles.push_back(Super_Triangle);
     }
 
-    
     {
         BEN(ScopeTimer t("main operations", ben::trinagulation);)
 
-        Vector2f points_position;
+            Vector2f points_position;
         // g³ówne obroty przez wszystkie punkty
         for (auto& point : lpoints)
         {
-            points_position = getMiddle(point);
+            points_position = point.getMiddle();
 
             // loop through original_triangles
             // Identifying bad Triangles from original list                        
@@ -279,6 +283,41 @@ list<Triangle> Triangulation::triangulationDelaunay(list<CircleShape*>& lpoints)
         removeTrianglesCommonTo(original_Triangles, Super_Triangle);
     }
 
-
+    INFO(info.info_triangle = original_Triangles)
     return original_Triangles;
+}
+
+// Save to File //
+void Triangulation::saveToFile(string p, const list<Triangle>& listTriangle, const vector<myCircle> vecPoints)
+{
+    const char* path = p.c_str();
+
+    ofstream FILE(path);
+    const Triangle last = listTriangle.back();
+
+    myVector position(false);       Vector2f v;
+    FILE << "nodes" << endl;
+    for (auto& point : vecPoints)
+    {
+        position.afterConstructor(point.getMiddle(), true);
+        v = *position;
+
+        FILE << point.m_id << " ";
+        FILE << v.x << " ";
+        FILE << v.y << endl;        
+    }
+
+
+    int id{};
+    FILE << "elements" << endl;
+    for (auto& triangle : listTriangle)
+    {
+        id = triangle.id_A;
+        FILE << id - 1 << " ";  id *= 3;
+        FILE << id - 3 << " " << id - 2 << " " << id - 1;
+
+        if(triangle != last) FILE << endl;
+    }
+
+    FILE.close();
 }

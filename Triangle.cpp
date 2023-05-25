@@ -1,5 +1,5 @@
 #pragma once
-#include "header.h"
+#include "Header.h"
 
 Triangle::Triangle()
 {
@@ -10,6 +10,10 @@ Triangle::Triangle()
     Aangle = 0;
     Bangle = 0;
     Cangle = 0;
+
+    id_A = 0;
+    id_B = 0;
+    id_C = 0;
 }
 Triangle::Triangle(Vector2f aa, Vector2f bb, Vector2f cc)
 {
@@ -20,6 +24,10 @@ Triangle::Triangle(Vector2f aa, Vector2f bb, Vector2f cc)
     Aangle = 0;
     Bangle = 0;
     Cangle = 0;
+
+    id_A = 0;
+    id_B = 0;
+    id_C = 0;
 }
 Triangle::Triangle(CircleShape aa, CircleShape bb, CircleShape cc)
 {
@@ -32,6 +40,10 @@ Triangle::Triangle(CircleShape aa, CircleShape bb, CircleShape cc)
     Aangle = 0;
     Bangle = 0;
     Cangle = 0;
+
+    id_A = 0;
+    id_B = 0;
+    id_C = 0;
 }
 void Triangle::infoAboutPosition()
 {
@@ -39,7 +51,6 @@ void Triangle::infoAboutPosition()
     cout << "B - " << B.x << " " << B.y << endl;
     cout << "C - " << C.x << " " << C.y << endl;
 }
-
 
 void Triangle::getAngles()
 {
@@ -73,7 +84,32 @@ bool Triangle::anyCommnoPointWith(Triangle t)
     }
     return false;
 }
+Vector2f Triangle::getPositionForNumber()
+{
+    Line l;
 
+    return l.Point_of_Intersect(l.lineInTheMiddleOf2(Line(A, B), Line(A, C))
+                              , l.lineInTheMiddleOf2(Line(A, C), Line(C, B)));
+}
+
+
+bool Triangle::operator==(const Triangle& other)
+{
+    return (A == other.A && B == other.B && C == other.C);
+}
+bool Triangle::operator!=(const Triangle& other)
+{
+    return !(this->operator==(other));
+}
+
+bool Triangle::operator==(const Triangle& other) const
+{
+    return (A == other.A && B == other.B && C == other.C);
+}
+bool Triangle::operator!=(const Triangle& other) const
+{
+    return !(this->operator==(other));
+}
 
 Triangle Triangle::downLeft()
 {

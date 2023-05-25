@@ -1,9 +1,9 @@
 #pragma once
-#include "header.h"
+#include "Header.h"
 
-list<CircleShape*> VertexArrayFunctions::drawFileInputPoints(string p, float rad)
+list<myCircle> VertexArrayFunctions::loadFileInputPoints(string p, float rad)
 {
-    list<CircleShape*> res;
+    list<myCircle> res;
     const char* path = p.c_str();
 
     ifstream FILE(path);
@@ -29,13 +29,13 @@ list<CircleShape*> VertexArrayFunctions::drawFileInputPoints(string p, float rad
         FILE >> receved_x;
         FILE >> receved_y;
 
-        CircleShape* c = new CircleShape();
-        c->setFillColor(Color::Green);
-        c->setRadius(rad);
-        c->setPosition(*myVector(receved_x, receved_y, true));
-        c->setPosition(cir.setMiddle(c));
+        myCircle mycircle;
+        mycircle.m_circle->setFillColor(Color::Green);
+        mycircle.m_circle->setRadius(rad);
+        mycircle.m_circle->setPosition(*myVector(static_cast<float>(receved_x), static_cast<float>(receved_y), true));
+        mycircle.m_circle->setPosition(mycircle.setMiddle());
 
-        res.push_back(c);
+        res.push_back(mycircle);
     }
 
     return res;
@@ -54,9 +54,9 @@ VertexArray VertexArrayFunctions::drawTriangle(Triangle t, Color c, offSet off)
 {
     VertexArray lines(sf::LineStrip, 4);
 
-    myVector A(t.A, false);     A.x += off.x_offset; A.y += off.y_offset;
-    myVector B(t.B, false);     B.x += off.x_offset; B.y += off.y_offset;
-    myVector C(t.C, false);     C.x += off.x_offset; C.y += off.y_offset;
+    myVector A(t.A, false);     A.x += static_cast<float>(off.x_offset); A.y += static_cast<float>(off.y_offset);
+    myVector B(t.B, false);     B.x += static_cast<float>(off.x_offset); B.y += static_cast<float>(off.y_offset);
+    myVector C(t.C, false);     C.x += static_cast<float>(off.x_offset); C.y += static_cast<float>(off.y_offset);
 
     lines[0] = *A; lines[0].color = c;
     lines[1] = *B; lines[1].color = c;
@@ -70,9 +70,9 @@ list<CircleShape> VertexArrayFunctions::drawPointsOnEndOfTriangle(Triangle t, Co
     list<CircleShape> res_list;
     
     {
-        myVector A(t.A, false);     A.x += off.x_offset; A.y -= off.y_offset;
-        myVector B(t.B, false);     B.x += off.x_offset; B.y -= off.y_offset;
-        myVector C(t.C, false);     C.x += off.x_offset; C.y -= off.y_offset;
+        myVector A(t.A, false);     A.x += static_cast<float>(off.x_offset); A.y -= static_cast<float>(off.y_offset);
+        myVector B(t.B, false);     B.x += static_cast<float>(off.x_offset); B.y -= static_cast<float>(off.y_offset);
+        myVector C(t.C, false);     C.x += static_cast<float>(off.x_offset); C.y -= static_cast<float>(off.y_offset);
         
         myCircle cir;
 

@@ -3,11 +3,11 @@
 // Configurations: Debug -> Debugging -> Environment -> PATH=S:\Programy Visual Studio\aaa SFML - for Visualization\SFML-2.5.1\bin
 // PATH= gdziekolwiek jest folder bin plików SFML
 // apply -> ok
-#include "header.h"
+#include "Header.h"
 
 int main()
 {
-    srand(time(NULL));
+    srand((unsigned int)time(NULL));
 
     // fajne wyœwietlanie trójk¹ta  
     /*
@@ -37,7 +37,7 @@ int main()
 
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "C++ is the best", sf::Style::Default, settings);
     //RenderWindow window(VideoMode(WIDTH, HEIGHT), "C++ is the best");
-    //window.setFramerateLimit(69);   
+    window.setFramerateLimit(160);
 
     // Napis //
     sf::Text text;
@@ -84,21 +84,14 @@ int main()
     int chosen = 1;
     bool prop_connecting_activated = true;
     int circle_moving_speed = 1;
-    int local_rad = CIRCLE_RAD;
+    float local_rad = CIRCLE_RAD;
     Vector2i previous_mouse_position = (Vector2i(0, 0));
-    // ~properties //
-
-
-    // Paths //
-    string path_point = "_input/_points/";
-    string path_mesh = "_input/_mesh/";
-    string path_quadtree = "_input/_quadtree/";
-    // ~Paths //
+    // ~properties //  
 
 
     // FILE INPUT //
     const float file_rad = 10;
-    string file_input_path = path_point + "points.txt";
+    string file_input_path = path::points + "points.txt";
     // ~FILE INPUT //
 
 
@@ -113,22 +106,23 @@ int main()
         }
     }
     // ~BENCHMARKING //
-
+        
 
     // Main Structures //
     VertexArrayFunctions vfunc;
     Operations o;
     Recalculating recal;
-    Triangulation trian;
-    myCircle cir;
-    ConvexShell otoczka;
+    Triangulation trian;    
+    //ConvexShell otoczka;
 
-    list<CircleShape*> list_circle_points;
+    int id_for_circle = 1;
+    vector<myCircle> vec_circle_points;             vec_circle_points.reserve(25);
     CircleShape* p_chosen_circle_for_moving = nullptr;
     CircleShape* p_distance_calculation_circle = nullptr;
     CircleShape* circum_circle = nullptr;
     Triangle* circum_triangle = nullptr;
 
+    // teraz zawsze robiæ na vector, a nie list
     list<VertexArray> list_mesh_blocks;
     list<Text> list_length_of_distances_dcl;
     VertexArray* tab_VertexArray_points_in_circle = new VertexArray[VERTEX_ARRAY_SIZE];
@@ -142,7 +136,7 @@ int main()
 
 
     // Passing of Calculations //
-    Pass Big_Pass(&list_circle_points,
+    Pass Big_Pass(&vec_circle_points,
         &tab_VertexArray_points_in_circle,
         &list_mesh_blocks, x_slices, y_slices,
         &p_chosen_circle_for_moving, &p_distance_calculation_circle,
@@ -154,52 +148,44 @@ int main()
 
     #if QUAD_TREE_ACTIVE == 1
         //Quad Tree serducho.txt go_.txt
-        QuadTree q(path_quadtree + "do sprawozdania.txt", 100, 300); // not recalculating y
+        QuadTree q(path::quadtree + "s.txt", 100, 300); // not recalculating y
         q.Start_Quadding();
         list<VertexArray> quadtree_list = q.Get_List_for_visualization();
     #endif
 
-    // Fraktale //
-    
-    // rekurencja krzy¿
-    InterestingVisualizations in;
-    //list<VertexArray> cross_list = in.Recursion_with_Cross_in_Rectangle(500, 500, 250, 250, 4);
-    
-    //list<VertexArray> cross_list = in.Recursion_with_Cross_in_Rectangle(500, 500, 250, 250, 1, 1, 1, 1);
-    list<VertexArray> cross_list = in.Recursion_with_Cross_in_Rectangle(500, 500, 250, 250, 1, 5, 5, 1);
-    // nak³adanie jednego na drugie
-    //list<VertexArray> tmp_opposite_site = in.Recursion_with_Cross_in_Rectangle(500, 500, 250, 250, 5, 1, 1, 5);
-    //for (auto& op : tmp_opposite_site) cross_list.push_back(op);
-    
-    // Triangle for recursions
-    Triangle t(*myVector(0, 0, true), *myVector(500, 1000, true), *myVector(1000, 0, true));
-    offSet off(100, 100);
-    //list<VertexArray> triangle_list = in.RecursionWithTriangles(t, off, 1);
+    // Fraktale //    
+    {
+        // rekurencja krzy¿
+        InterestingVisualizations in;
+        //list<VertexArray> cross_list = in.Recursion_with_Cross_in_Rectangle(500, 500, 250, 250, 4);
 
-    int whole = 2;
-    list<VertexArray> triangle_list = in.RecursionWithTriangles(t, off, whole, whole, whole, 10);
+        //list<VertexArray> cross_list = in.Recursion_with_Cross_in_Rectangle(500, 500, 250, 250, 1, 1, 1, 1);
+        list<VertexArray> cross_list = in.Recursion_with_Cross_in_Rectangle(500, 500, 250, 250, 1, 5, 5, 1);
+        // nak³adanie jednego na drugie
+        //list<VertexArray> tmp_opposite_site = in.Recursion_with_Cross_in_Rectangle(500, 500, 250, 250, 5, 1, 1, 5);
+        //for (auto& op : tmp_opposite_site) cross_list.push_back(op);
 
+        // Triangle for recursions
+        Triangle t(*myVector(0, 0, true), *myVector(500, 1000, true), *myVector(1000, 0, true));
+        offSet off(100, 100);
+        //list<VertexArray> triangle_list = in.RecursionWithTriangles(t, off, 1);
+
+        int whole = 2;
+        list<VertexArray> triangle_list = in.RecursionWithTriangles(t, off, whole, whole, whole, 10);
+    }
     // ~Fraktale //
-
-
-
-
-    // cwana petla    albo z -- jak nie zale¿y na kolejnoœci int i = 6; while(i-- > 0)
-    int i = -1;
-    while (++i < 6);
     
     // Linia next point
+    /*
     Line linaaa(Vector2f(500, 700), Vector2f(800, 900));
 
     Line laaaaaa(Vector2f(500, 700), Vector2f(300, 900));
-    Vector2f randy = laaaaaa.NextPointAfter(laaaaaa.MiddleOfLine(), 0.5, true);
-
-
-
+    Vector2f randy = laaaaaa.NextPointAfter(laaaaaa.MiddleOfLine(), 0.5, true);    
+    */
 
     // Triangulation
     /*
-    list<Triangle> tr = trian.triangulationDelaunay(list_circle_points);
+    list<Triangle> tr = trian.triangulationDelaunay(vec_circle_points);
     cout << "done" << endl;
     cout << tr.size() << endl;
 
@@ -212,11 +198,14 @@ int main()
     }
     */
 
+    
+
     while (window.isOpen())
     {
         Event event;
-        while (window.pollEvent(event))
-        {
+        window.pollEvent(event);
+        //while (window.pollEvent(event))
+        //{
             // Modes
             switch (chosen)
             {
@@ -230,20 +219,21 @@ int main()
                     {
                         if (!(localPosition.x < 0 || localPosition.x > WIDTH || localPosition.y < 0 || localPosition.y > HEIGHT))
                         {
-                            o.All_Points_Green(list_circle_points);
+                            o.All_Points_Green(vec_circle_points);
 
                             // CircleShape circle;
                             // circle.setRadius(local_rad);
                             // circle.setFillColor(sf::Color::Red);
                             // circle.setPosition(localPosition.x - local_rad, localPosition.y - local_rad);
 
-                            CircleShape* circle = new CircleShape;
-                            circle->setRadius(local_rad);
-                            circle->setFillColor(sf::Color::Red);
-                            circle->setPosition(localPosition.x - local_rad, localPosition.y - local_rad);
+                            myCircle mycircle;
+                            mycircle.m_id = id_for_circle;                  id_for_circle++;
+                            mycircle.m_circle->setRadius(local_rad);
+                            mycircle.m_circle->setFillColor(sf::Color::Red);
+                            mycircle.m_circle->setPosition(localPosition.x - local_rad, localPosition.y - local_rad);
 
                             // dodanie do listy                            
-                            list_circle_points.push_back(circle);
+                            vec_circle_points.push_back(mycircle);
 
 
                             // Passes //
@@ -253,8 +243,8 @@ int main()
                                 Big_Pass.Token_Distance_line();
                                 Big_Pass.Token_Distance_text();
                                 Big_Pass.Token_Convex_shell();
-                                if (list_circle_points.size() == 3) Big_Pass.Token_Circum_Circle();
-                                if (list_circle_points.size() > 2)  Big_Pass.tokenTriangulation();
+                                if (vec_circle_points.size() == 3) Big_Pass.Token_Circum_Circle();
+                                if (vec_circle_points.size() > 2)  Big_Pass.tokenTriangulation();
                             }
 
                             SLEEP(100);
@@ -269,7 +259,7 @@ int main()
                         if (!pass_connecting_points)
                         {
                             pass_connecting_points = true;
-                            int list_size = distance(list_circle_points.begin(), list_circle_points.end());
+                            int list_size = distance(vec_circle_points.begin(), vec_circle_points.end());
                             if (list_size > 0)
                             {
                                 if (prop_connecting_activated) list_size++;
@@ -278,7 +268,7 @@ int main()
                                 int i = 0;
                                 Vector2f tmp;
                                 float rad;
-                                for (list<CircleShape*>::const_iterator it = list_circle_points.begin(); it != list_circle_points.end(); it++)
+                                for (list<CircleShape*>::const_iterator it = vec_circle_points.begin(); it != vec_circle_points.end(); it++)
                                 {
                                     rad = (*it)->getRadius();
                                     tmp = (*it)->getPosition();
@@ -290,8 +280,8 @@ int main()
                                 }
                                 if (prop_connecting_activated)
                                 {
-                                    rad = (*list_circle_points.begin())->getRadius();
-                                    tmp = (*list_circle_points.begin())->getPosition();
+                                    rad = (*vec_circle_points.begin())->getRadius();
+                                    tmp = (*vec_circle_points.begin())->getPosition();
                                     tmp.x = tmp.x + rad;
                                     tmp.y = tmp.y + rad;
 
@@ -312,7 +302,7 @@ int main()
                         if (!Big_Pass.pass_connecting_points)
                         {
                             Big_Pass.pass_connecting_points = true;
-                            int list_size = distance(list_circle_points.begin(), list_circle_points.end());
+                            int list_size = (int)distance(vec_circle_points.begin(), vec_circle_points.end());
                             if (list_size > 0)
                             {
                                 if (Big_Pass.prop_connecting_activated) list_size++;
@@ -321,10 +311,11 @@ int main()
                                 int i = 0;
                                 Vector2f tmp;
                                 float rad;
-                                for (list<CircleShape*>::const_iterator it = list_circle_points.begin(); it != list_circle_points.end(); it++)
+
+                                for (auto& it : vec_circle_points)
                                 {
-                                    rad = (*it)->getRadius();
-                                    tmp = (*it)->getPosition();
+                                    rad = it.m_circle->getRadius();
+                                    tmp = it.m_circle->getPosition();
                                     tmp.x = tmp.x + rad;
                                     tmp.y = tmp.y + rad;
 
@@ -333,8 +324,8 @@ int main()
                                 }
                                 if (Big_Pass.prop_connecting_activated)
                                 {
-                                    rad = (*list_circle_points.begin())->getRadius();
-                                    tmp = (*list_circle_points.begin())->getPosition();
+                                    rad = (*vec_circle_points.begin()).m_circle->getRadius();
+                                    tmp = (*vec_circle_points.begin()).m_circle->getPosition();
                                     tmp.x = tmp.x + rad;
                                     tmp.y = tmp.y + rad;
 
@@ -357,7 +348,7 @@ int main()
                     {
                         if (!(localPosition.x < 0 || localPosition.x > WIDTH || localPosition.y < 0 || localPosition.y > HEIGHT))
                         {
-                            o.All_Points_Green(list_circle_points);
+                            o.All_Points_Green(vec_circle_points);
 
                             if (p_distance_calculation_circle != nullptr)
                                 delete p_distance_calculation_circle;
@@ -367,27 +358,17 @@ int main()
                             circle->setFillColor(sf::Color::Yellow);
                             circle->setPosition(localPosition.x - local_rad, localPosition.y - local_rad);
 
-                            p_distance_calculation_circle = circle;
-
-                            // Recalculating //
-                            /*
-                            {
-                                if (pass_lines_to_all && p_distance_calculation_circle != nullptr) recal.recalculateSetVertexArrayForDistanceCircleLines(list_circle_points, tab_VertexArray_points_in_circle, p_distance_calculation_circle);
-                                if (pass_distance_to_all && p_distance_calculation_circle != nullptr) recal.recalculateSetTextDistanceCircle(list_length_of_distances_dcl, list_circle_points, p_distance_calculation_circle, font);
-                            }
-                            */
+                            p_distance_calculation_circle = circle;                            
 
                             // Passes //
                             {
-                                Big_Pass.Token_Mesh();
-                                Big_Pass.Token_Lines();
+                                // Nie potrzebne rekalkulacje                                
+                                
                                 Big_Pass.Token_Distance_line();
-                                Big_Pass.Token_Distance_text();
-                                Big_Pass.Token_Convex_shell();
+                                Big_Pass.Token_Distance_text();                                
                             }
 
-
-                            SLEEP(100);
+                            //SLEEP(100);
                         }
                     }
 
@@ -410,14 +391,14 @@ int main()
                         float x, y;
 
                         // znalaz³ ku³ko o które nam chodzi
-                        for (list<CircleShape*>::iterator it = list_circle_points.begin(); it != list_circle_points.end(); it++)
+                        for (auto& it : vec_circle_points)
                         {
-                            tmp = (*it)->getPosition();
-                            radious = (*it)->getRadius();
+                            tmp = it.m_circle->getPosition();
+                            radious = it.m_circle->getRadius();
                             x = tmp.x + radious / 2;
                             y = tmp.y + radious / 2;
 
-                            if ((float)radious >= o.Get_length(localPosition.x, localPosition.y, x, y)) p_chosen_circle_for_moving = *it;
+                            if ((float)radious >= o.Get_length((float)localPosition.x, (float)localPosition.y, x, y)) p_chosen_circle_for_moving = &*it.m_circle;
                         }
                     }
                     
@@ -445,8 +426,8 @@ int main()
                                 Big_Pass.Token_Distance_line();
                                 Big_Pass.Token_Distance_text();
                                 Big_Pass.Token_Convex_shell();
-                                if (list_circle_points.size() == 3) Big_Pass.Token_Circum_Circle();
-                                if (list_circle_points.size() > 2)  Big_Pass.tokenTriangulation();
+                                if (vec_circle_points.size() == 3) Big_Pass.Token_Circum_Circle();
+                                if (vec_circle_points.size() > 2)  Big_Pass.tokenTriangulation();
                             }
                         }
                     }
@@ -459,8 +440,8 @@ int main()
                         else local_rad--;
 
                         // Circle update
-                        for (list<CircleShape*>::iterator it = list_circle_points.begin(); it != list_circle_points.end(); it++)
-                            (*it)->setRadius(local_rad);
+                        for (auto& it : vec_circle_points)
+                            it.m_circle->setRadius(local_rad);
                         if (p_distance_calculation_circle) (p_distance_calculation_circle)->setRadius(local_rad);
 
                         // Passes //
@@ -470,8 +451,8 @@ int main()
                             Big_Pass.Token_Distance_line();
                             Big_Pass.Token_Distance_text();
                             Big_Pass.Token_Convex_shell();
-                            if (list_circle_points.size() == 3) Big_Pass.Token_Circum_Circle();
-                            if (list_circle_points.size() > 2)  Big_Pass.tokenTriangulation();
+                            if (vec_circle_points.size() == 3) Big_Pass.Token_Circum_Circle();
+                            if (vec_circle_points.size() > 2)  Big_Pass.tokenTriangulation();
                         }
                     }
                                                                                     // ---> NEW RECALCULATION <--- //
@@ -524,25 +505,33 @@ int main()
                             Big_Pass.Token_Distance_line();
                             Big_Pass.Token_Distance_text();
                             Big_Pass.Token_Convex_shell();
-                            if (list_circle_points.size() == 3) Big_Pass.Token_Circum_Circle();
-                            if (list_circle_points.size() > 2)  Big_Pass.tokenTriangulation();
+                            if (vec_circle_points.size() == 3) Big_Pass.Token_Circum_Circle();
+                            if (vec_circle_points.size() > 2)  Big_Pass.tokenTriangulation();
                         }
                     }
 
                     break;
                 }
 
-                // Triangulations
+                // empty //
                 case 3:
                 {
 
                     break;
                 }
 
-                // All recursion stuff
+                // All recursion stuff // Triangulations
                 case 4:
                 {
 
+                    break;
+                }
+
+                // Track mouse movement
+                case 5:
+                {
+                    Vector2i localPosition = sf::Mouse::getPosition(window);
+                    cout << localPosition.x << " " << localPosition.y << endl;
                     break;
                 }
 
@@ -552,8 +541,6 @@ int main()
                 }
             }
 
-            
-            
 
 
             // Properties //
@@ -563,29 +550,30 @@ int main()
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
                 {
                     if (!Big_Pass.prop_drawing_circles)
-                    {
                         Big_Pass.prop_drawing_circles = true;
-                        SLEEP(100);
-                    }
                     else
-                    {
                         Big_Pass.prop_drawing_circles = false;
-                        SLEEP(100);
-                    }
+
+                    SLEEP(100);
                 }
-                // show menu
+                // change for // only number // number with coordinets // only coordinets // no info at all
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
                 {
+                    Big_Pass.prop_drawing_coordinets++;
+                    Big_Pass.prop_drawing_coordinets %= 4;
+
+                    SLEEP(100);
+                }
+
+                // show menu
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))
+                {
                     if (!Big_Pass.prop_show_menu)
-                    {
                         Big_Pass.prop_show_menu = true;
-                        SLEEP(100);
-                    }
                     else
-                    {
                         Big_Pass.prop_show_menu = false;
-                        SLEEP(100);
-                    }
+
+                    SLEEP(100);
                 }
                 // clear
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
@@ -599,14 +587,18 @@ int main()
                 }
             }
 
-            // Visualizations //
+            // Visualizations //                - - - dorobiæ Save Mesh i Save Triangulation
             if (1)
             {
                 // add file input points
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::F))
                 {
-                    list<CircleShape*> file_input = vfunc.drawFileInputPoints(file_input_path, file_rad);
-                    for (auto& f : file_input) list_circle_points.push_back(f);
+                    list<myCircle> file_input = vfunc.loadFileInputPoints(file_input_path, file_rad);
+                    for (auto& f : file_input)
+                    {
+                        f.m_id = id_for_circle;         id_for_circle++;
+                        vec_circle_points.push_back(f);
+                    }
 
                     // Passes //
                     {
@@ -615,20 +607,46 @@ int main()
                         Big_Pass.Token_Distance_line();
                         Big_Pass.Token_Distance_text();
                         Big_Pass.Token_Convex_shell();
-                        if (list_circle_points.size() == 3) Big_Pass.Token_Circum_Circle();
-                        if (list_circle_points.size() > 2)  Big_Pass.tokenTriangulation();
+                        if (vec_circle_points.size() == 3) Big_Pass.Token_Circum_Circle();
+                        if (vec_circle_points.size() > 2)  Big_Pass.tokenTriangulation();
                     }
 
                     SLEEP(300);
                 }
+
                 // save mesh or triangulation to file
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
                 {
-                    if (Big_Pass.pass_mesh);
-                    if (Big_Pass.pass_convex_shell);
-                    if (Big_Pass.pass_triangulation);
+                    if (Big_Pass.pass_mesh) cout << "";
+                    if (Big_Pass.pass_convex_shell) cout << "";
+                    if (Big_Pass.pass_triangulation)
+                    {
+                        trian.saveToFile(path::triangulation + "all triangle information.txt", list_triangulaton_triangles, vec_circle_points);
+                        cout << "triangulation saved" << endl;
+                    }
+
+                    SLEEP(100);
                 }
 
+
+                // Random Moving Poinst //
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+                {
+                    if (!Big_Pass.prop_random_point_movement)
+                    {
+                        Big_Pass.prop_random_point_movement = true;
+
+                        BEN(system("cls");)
+                            // nie ma tutaj od razu rekalkulacji, bo dla tej opcji rekalkulacja musi byæ ci¹gla
+                           
+                        SLEEP(100);
+                    }
+                    else
+                    {
+                        Big_Pass.prop_random_point_movement = false;
+                        SLEEP(100);
+                    }
+                }
 
 
                 // connect
@@ -647,7 +665,7 @@ int main()
                     SLEEP(100);
                 }
                 // nearest neighbour
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::N))
                 {
                     if (Big_Pass.pass_closest_point == false)
                     {
@@ -655,7 +673,7 @@ int main()
                     }
                     else
                     {
-                        o.All_Points_Green(list_circle_points);
+                        o.All_Points_Green(vec_circle_points);
                         Big_Pass.pass_closest_point = false;
                     }
 
@@ -666,12 +684,12 @@ int main()
                 {
                     // before Big_Pass
                     /*
-                    if (!pass_mesh && !list_circle_points.empty())
+                    if (!pass_mesh && !vec_circle_points.empty())
                     {
                         pass_mesh = true;
 
                         // to nie s¹ ci¹g³e rekalkulacje tylko pojedynczy, ¿eby coœ pokaza³ ju¿ w momencie klikniêcia
-                        recal.recalculateMesh(list_mesh_blocks, list_circle_points, x_slices, y_slices);
+                        recal.recalculateMesh(list_mesh_blocks, vec_circle_points, x_slices, y_slices);
 
                         LOG("Mesh complete");
                         SLEEP(100);
@@ -683,12 +701,12 @@ int main()
                     }
                     */
 
-                    if (!Big_Pass.pass_mesh && !list_circle_points.empty())
+                    if (!Big_Pass.pass_mesh && !vec_circle_points.empty())
                     {
                         Big_Pass.pass_mesh = true;
 
                         // to nie s¹ ci¹g³e rekalkulacje tylko pojedynczy, ¿eby coœ pokaza³ ju¿ w momencie klikniêcia
-                        recal.recalculateMesh(list_mesh_blocks, list_circle_points, x_slices, y_slices);
+                        recal.recalculateMesh(list_mesh_blocks, vec_circle_points, x_slices, y_slices);
 
                         LOG("Mesh complete");
                         SLEEP(100);
@@ -710,7 +728,7 @@ int main()
 
                             // to nie s¹ ci¹g³e rekalkulacje tylko pojedynczy, ¿eby coœ pokaza³ ju¿ w momencie klikniêcia
                             recal.recalculateSetVertexArrayForDistanceCircleLines
-                            (list_circle_points, tab_VertexArray_points_in_circle, p_distance_calculation_circle);
+                            (vec_circle_points, tab_VertexArray_points_in_circle, p_distance_calculation_circle);
 
                             SLEEP(100);
                         }
@@ -731,7 +749,7 @@ int main()
                             Big_Pass.pass_distance_to_all = true;
 
                             // to nie s¹ ci¹g³e rekalkulacje tylko pojedynczy, ¿eby coœ pokaza³ ju¿ w momencie klikniêcia
-                            recal.recalculateSetTextDistanceCircle(list_length_of_distances_dcl, list_circle_points,
+                            recal.recalculateSetTextDistanceCircle(list_length_of_distances_dcl, vec_circle_points,
                                 p_distance_calculation_circle, font);
 
                             SLEEP(100);
@@ -751,7 +769,7 @@ int main()
                     {
                         Big_Pass.pass_convex_shell = true;
 
-                        recal.recalculateConvexShell(list_circle_points, tab_VertexArray_points_in_circle);
+                        recal.recalculateConvexShell(vec_circle_points, tab_VertexArray_points_in_circle);
 
                         SLEEP(100);
                     }
@@ -769,8 +787,8 @@ int main()
                         Big_Pass.pass_circum_circle = true;
 
                         //circum_circle
-                        if (list_circle_points.size() == 3)
-                            recal.recalculate3pointsCircle(list_circle_points, &circum_circle, Color::Yellow, &circum_triangle);
+                        if (vec_circle_points.size() == 3)
+                            recal.recalculate3pointsCircle(vec_circle_points, &circum_circle, Color::Yellow, &circum_triangle);
 
                         SLEEP(100);
                     }
@@ -789,8 +807,8 @@ int main()
 
                         BEN(system("cls");)
                         //circum_circle
-                        if (list_circle_points.size() > 2)
-                            recal.recalculateTriangulation(list_circle_points, list_triangulaton_triangles);
+                        if (vec_circle_points.size() > 2)
+                            recal.recalculateTriangulation(vec_circle_points, list_triangulaton_triangles);
 
                         SLEEP(100);
                     }
@@ -807,21 +825,27 @@ int main()
             {
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num1))
                 {
-                    chosen = 1; o.All_Points_Green(list_circle_points); chosen_mode.setString("1");
+                    chosen = 1; o.All_Points_Green(vec_circle_points); chosen_mode.setString("1");
                 }
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
                 {
-                    chosen = 2; o.All_Points_Green(list_circle_points); chosen_mode.setString("2");
+                    chosen = 2; o.All_Points_Green(vec_circle_points); chosen_mode.setString("2");
                 }
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3))
                 {
-                    chosen = 3; o.All_Points_Green(list_circle_points); chosen_mode.setString("3");
+                    chosen = 3; o.All_Points_Green(vec_circle_points); chosen_mode.setString("3");
                 }
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num4))
                 {
-                    chosen = 4; o.All_Points_Green(list_circle_points); chosen_mode.setString("4");
+                    chosen = 4; o.All_Points_Green(vec_circle_points); chosen_mode.setString("4");
                 }
-            }
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num5))
+                {
+                    chosen = 5; o.All_Points_Green(vec_circle_points); chosen_mode.setString("5");
+                }
+            }           
+            
+
 
 
             // exit
@@ -834,13 +858,61 @@ int main()
                 system("cls");
             #endif
             
-              
+            // random points movement
+            if (Big_Pass.prop_random_point_movement)
+            {
+                recal.recalculateRandomPointPositions(vec_circle_points, 1);
+
+                // Passes //
+                {
+                    Big_Pass.Token_Mesh();
+                    Big_Pass.Token_Lines();
+                    Big_Pass.Token_Distance_line();
+                    Big_Pass.Token_Distance_text();
+                    Big_Pass.Token_Convex_shell();
+                    if (vec_circle_points.size() == 3) Big_Pass.Token_Circum_Circle();
+                    if (vec_circle_points.size() > 2)  Big_Pass.tokenTriangulation();
+                }
+            }
+
             // Recalculating //
             Big_Pass.Recalculating();
 
+
             window.clear();
             {
+                // Checking line in between 2 lines
+                /*
+                if (0)
+                {
+                    if (vec_circle_points.size() == 3)
+                    {
+                        system("cls");
+
+                        Line tmp1(vec_circle_points[0], vec_circle_points[2]);
+                        Line tmp2(vec_circle_points[0], vec_circle_points[1]);
+
+                        Line inBetween;
+                        inBetween = inBetween.lineInTheMiddleOf2(tmp1, tmp2);
+
+                        cout << "main" << endl;
+                        cout << tmp1.angleToOXinDegrees() << endl;
+                        cout << tmp2.angleToOXinDegrees() << endl;
+                        cout << endl;
+
+                        cout << "Line inBetween " << endl;
+                        cout << "a " << inBetween.a << endl;
+                        cout << "b " << inBetween.b << endl;
+                        cout << "point1 " << inBetween.point1.x << " " << inBetween.point1.y << endl;
+                        cout << "point2 " << inBetween.point2.x << " " << inBetween.point2.y << endl;
+
+                        window.draw(vfunc.drawLine(inBetween, Color::Red));                        
+                    }
+                }
+                */
+
                 // tmp --- true false
+                /*
                 {
                     // jak u¿ywaæ myVector i Cross_with_lines
                     if (0)
@@ -867,6 +939,7 @@ int main()
                     }                         
 
                     // Trójk¹t z punktami na koñcach
+                    
                     if (0)
                     {
                         Triangle tra(Vector2f(0, 0), Vector2f(150, 300), Vector2f(300, 0));
@@ -903,6 +976,7 @@ int main()
                             }
                         }
                     }
+                    
 
                     // testing line     with random point
                     if (0)
@@ -920,7 +994,7 @@ int main()
                         window.draw(circle_c);
                     }
 
-                    // testing line     next position
+                    // testing line     next position                     
                     if (0)
                     {
                         randy = laaaaaa.NextPointAfter(randy, 0.5, false);
@@ -933,101 +1007,172 @@ int main()
                         window.draw(vfunc.drawLine(laaaaaa, Color::Red));
                         window.draw(circle_c);
                     }
+                    
 
                     // rekurencja Fraktal z Trójk¹tów
+                    
                     if (0)
-                    {
                         for (auto& obj : triangle_list)
                         {                            
                             window.draw(obj);
                         }
+                    
+                }
+                */
+                
+                
+                // Show if Big_Pass
+                if(1)
+                {
+                    // p_distance_calculation_circle - Yellow
+                    if (p_distance_calculation_circle != nullptr)
+                        window.draw(*p_distance_calculation_circle);
+
+                    // point inside circles
+                    if (Big_Pass.pass_connecting_points && tab_VertexArray_points_in_circle[0].getVertexCount() != 0)
+                        window.draw(tab_VertexArray_points_in_circle[0]);
+
+                    // lines to all points
+                    if (Big_Pass.pass_lines_to_all && tab_VertexArray_points_in_circle[1].getVertexCount() != 0)
+                        window.draw(tab_VertexArray_points_in_circle[1]);
+
+                    // otoczka
+                    if (Big_Pass.pass_convex_shell && tab_VertexArray_points_in_circle[2].getVertexCount() != 0)
+                        window.draw(tab_VertexArray_points_in_circle[2]);
+
+                    // distances to all points list_length_of_distances_dcl
+                    if (Big_Pass.pass_distance_to_all)
+                        for (list<Text>::iterator it = list_length_of_distances_dcl.begin(); it != list_length_of_distances_dcl.end(); it++)
+                            window.draw(*it);
+
+                    // marking closest point --- rekalkulacja nic nie zwraca, bo funkcja od razu zmienia kolor odpowiedniego punktu
+                    if (Big_Pass.pass_closest_point && p_distance_calculation_circle)
+                        recal.recalculateClosestNeightbour(vec_circle_points, p_distance_calculation_circle);
+
+                    // mesh lines
+                    if (Big_Pass.pass_mesh)
+                        for (list<VertexArray>::iterator it = list_mesh_blocks.begin(); it != list_mesh_blocks.end(); it++)
+                            window.draw(*it);
+
+                    // quad tree
+                    #if QUAD_TREE_ACTIVE == 1
+                    {
+                        for (auto& obj : quadtree_list)
+                            window.draw(obj);
+                    }
+                    #endif
+
+                    // circum circle
+                    if (Big_Pass.pass_circum_circle && vec_circle_points.size() == 3)
+                    {
+                        if (circum_circle != nullptr) window.draw(*circum_circle);
+                        else window.draw(vfunc.drawTriangle(*circum_triangle, Color::Red, offSet(0, 0)));
+                    }
+
+                    // triangulation
+                    if (Big_Pass.pass_triangulation)
+                    {
+                        if (vec_circle_points.size() < 3)
+                            list_triangulaton_triangles.clear();
+
+                        sf::Text text_triangle_id;
+                        for (auto& t : list_triangulaton_triangles)
+                        {
+                            window.draw(vfunc.drawTriangle(t, Color::Red, offSet(0, 0)));
+
+
+                            text_triangle_id.setFont(font);
+                            //text_triangle_id.setString(to_string(t.m_id_number));
+                            text_triangle_id.setCharacterSize(20); // in pixels, not points!
+                            text_triangle_id.setFillColor(sf::Color::White);
+                            //text_numbers_of_points.setStyle(sf::Text::Bold);
+                            text_triangle_id.setPosition(t.getPositionForNumber());
+                            //window.draw(text_triangle_id);                        
+                        }
                     }
                 }
 
-
-                // p_distance_calculation_circle - Yellow
-                if (p_distance_calculation_circle != nullptr)
-                    window.draw(*p_distance_calculation_circle);
-
-                // point inside circles
-                if (Big_Pass.pass_connecting_points && tab_VertexArray_points_in_circle[0].getVertexCount() != 0)
-                    window.draw(tab_VertexArray_points_in_circle[0]);
-
-                // lines to all points
-                if (Big_Pass.pass_lines_to_all && tab_VertexArray_points_in_circle[1].getVertexCount() != 0)
-                    window.draw(tab_VertexArray_points_in_circle[1]);
-
-                // otoczka
-                if (Big_Pass.pass_convex_shell && tab_VertexArray_points_in_circle[2].getVertexCount() != 0)
-                    window.draw(tab_VertexArray_points_in_circle[2]);
-
-                // distances to all points list_length_of_distances_dcl
-                if (Big_Pass.pass_distance_to_all)
-                    for (list<Text>::iterator it = list_length_of_distances_dcl.begin(); it != list_length_of_distances_dcl.end(); it++)
-                        window.draw(*it);
-
-                // marking closest point --- rekalkulacja nic nie zwraca, bo funkcja od razu zmienia kolor odpowiedniego punktu
-                if (Big_Pass.pass_closest_point && p_distance_calculation_circle)
-                    recal.recalculateClosestNeightbour(list_circle_points, p_distance_calculation_circle);
-
-                // mesh lines
-                if (Big_Pass.pass_mesh)
-                    for (list<VertexArray>::iterator it = list_mesh_blocks.begin(); it != list_mesh_blocks.end(); it++)
-                        window.draw(*it);
-
-                // quad tree
-                #if QUAD_TREE_ACTIVE == 1
-                {
-                    for (auto& obj : quadtree_list)
-                        window.draw(obj);
-                }
-                #endif
-
-                // circum circle
-                if (Big_Pass.pass_circum_circle && list_circle_points.size() == 3)
-                {
-                    if(circum_circle != nullptr) window.draw(*circum_circle);
-                    else window.draw(vfunc.drawTriangle(*circum_triangle, Color::Red, offSet(0,0)));
-                }
-
-                // triangulation
-                if (Big_Pass.pass_triangulation)
-                {
-                    if (list_circle_points.size() < 3)
-                        list_triangulaton_triangles.clear();
-
-                    for(auto& t : list_triangulaton_triangles)
-                        window.draw(vfunc.drawTriangle(t, Color::Red, offSet(0, 0)));
-                }
-
-                
-
                 // menu staff + circles
+                if(1)
                 {
                     // circles
                     if (Big_Pass.prop_drawing_circles)
-                    {
-                        int c = 1;
-                        for (list<CircleShape*>::iterator it = list_circle_points.begin(); it != list_circle_points.end(); it++)
+                    {                        
+                        for (auto& point : vec_circle_points)
                         {
-                            window.draw(**it);
+                            window.draw(*point.m_circle);
 
                             // Drawing numbers of circles
                             {
-                                Vector2f position = cir.getMiddle(*it);
-                                position.x += 3;
-                                position.y += 3;
+                                if (Big_Pass.prop_drawing_coordinets != 3)
+                                {
+                                    Vector2f original_position = point.getMiddle();
+                                    Vector2f position = original_position;
+                                    
+                                    sf::Text text_numbers_of_points;
+                                    text_numbers_of_points.setFont(font);                                    
+                                    text_numbers_of_points.setCharacterSize(20); // in pixels, not points!
+                                    text_numbers_of_points.setFillColor(sf::Color::White);
 
-                                sf::Text text_numbers_of_points;
-                                text_numbers_of_points.setFont(font);
-                                text_numbers_of_points.setString(to_string(c));
-                                text_numbers_of_points.setCharacterSize(20); // in pixels, not points!
-                                text_numbers_of_points.setFillColor(sf::Color::White);
-                                //text_numbers_of_points.setStyle(sf::Text::Bold);
-                                text_numbers_of_points.setPosition(position);
-                                window.draw(text_numbers_of_points);
+                                    switch (Big_Pass.prop_drawing_coordinets)
+                                    {
+                                        // tylko numeracja
+                                        case 0:
+                                        {
+                                            position.x += 3;
+                                            position.y += 3;
 
-                                c++;
+                                            text_numbers_of_points.setPosition(position);
+                                            text_numbers_of_points.setString(to_string(point.m_id));
+
+
+                                            window.draw(text_numbers_of_points);
+                                            break;
+                                        }
+
+                                        // tylko wspó³rzêdne
+                                        case 1:
+                                        {
+                                            myVector kartezius_position(original_position, true);
+                                            Vector2f kartez = *kartezius_position;
+
+                                            position.x -= 40;
+                                            position.y += 10;
+                                            text_numbers_of_points.setPosition(position);
+                                            text_numbers_of_points.setString("(" + to_string((int)kartez.x) +
+                                                ", " + to_string((int)kartez.y) + ")");
+
+
+                                            window.draw(text_numbers_of_points);
+                                            break;
+                                        }
+
+                                        // numbercja + wspó³rzêdne
+                                        case 2:
+                                        {
+                                            position.x += 3;
+                                            position.y += 3;
+
+                                            text_numbers_of_points.setString(to_string(point.m_id));
+                                            text_numbers_of_points.setPosition(position);
+                                            window.draw(text_numbers_of_points);
+
+                                            myVector kartezius_position(original_position, true);
+                                            Vector2f kartez = *kartezius_position;
+
+                                            text_numbers_of_points.setString("(" + to_string((int)kartez.x) +
+                                                ", " + to_string((int)kartez.y) + ")");
+                                            position.x -= 40;
+                                            position.y += 20;
+                                            text_numbers_of_points.setPosition(position);
+                                            window.draw(text_numbers_of_points);
+
+                                            break;
+                                        }
+
+                                        default: {  break; }
+                                    }
+                                }
                             }
                         }
                     }
@@ -1041,8 +1186,61 @@ int main()
                 }
             }
             window.display();
+        //}
+
+
+        // Continuous Random Points Position
+        /*
+        window.clear();
+        // Stuff that is continuous
+        if(1)
+        {
+            // random points movement
+            if (Big_Pass.prop_random_point_movement)
+                recal.recalculateRandomPointPositions(vec_circle_points, 1);
         }
-    }
+
+        // menu staff + circles
+        {
+            // circles
+            if (Big_Pass.prop_drawing_circles)
+            {
+                int c = 1;
+                for (list<CircleShape*>::iterator it = vec_circle_points.begin(); it != vec_circle_points.end(); it++)
+                {
+                    window.draw(**it);
+
+                    // Drawing numbers of circles
+                    {
+                        Vector2f position = cir.getMiddle(*it);
+                        position.x += 3;
+                        position.y += 3;
+
+                        sf::Text text_numbers_of_points;
+                        text_numbers_of_points.setFont(font);
+                        text_numbers_of_points.setString(to_string(c));
+                        text_numbers_of_points.setCharacterSize(20); // in pixels, not points!
+                        text_numbers_of_points.setFillColor(sf::Color::White);
+                        //text_numbers_of_points.setStyle(sf::Text::Bold);
+                        text_numbers_of_points.setPosition(position);
+                        window.draw(text_numbers_of_points);
+
+                        c++;
+                    }
+                }
+            }
+
+            // menu
+            if (Big_Pass.prop_show_menu)
+            {
+                window.draw(text);
+                window.draw(signal_circle); window.draw(chosen_mode);
+            }
+        }
+        
+        window.display();
+        */
+    }    
 
     return 0;
 }

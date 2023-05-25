@@ -1,5 +1,5 @@
 #pragma once
-#include "header.h"
+#include "Header.h"
 
 // ¿eby ³atwo mo¿na by³o przekazywaæ dalej limity i j --- X to J, Y to I
 
@@ -26,22 +26,43 @@ bool Limits::Border_or_Not(int** tab)
     return false;
 }
 
-Limits::Limits() :i_start(0), i_stop(0), j_start(0), j_stop(0) {}
+Limits::Limits() :i_start(0), i_stop(0), j_start(0), j_stop(0) 
+{
+}
 Limits::Limits(int istart, int istop, int jstart, int jstop)
     : i_start(istart), i_stop(istop), j_start(jstart), j_stop(jstop) {}
 Limits::Limits(const Limits& other)
-{
-    LOG("Limits copied");
+{    
     i_start = other.i_start;
     i_stop = other.i_stop;
 
     j_start = other.j_start;
     j_stop = other.j_stop;
 }
-void Limits::Print() { cout << "i " << i_start << " -> " << i_stop << "   " << "j " << j_start << " -> " << j_stop << endl; }
+void Limits::Print() 
+{
+    cout << "i " << i_start << " -> " << i_stop << "   " << "j " << j_start << " -> " << j_stop << endl; 
+}
 void Limits::Print_offset(int x_offset, int y_offset)
 {
     cout << "i " << i_start + y_offset << " -> " << i_stop + y_offset << "   " << "j " << j_start + x_offset << " -> " << j_stop + x_offset << endl;
+}
+
+myVector Limits::getCoordinetsCorner_UpLeft(bool recal)
+{
+    return myVector(j_start, i_start, recal);
+}
+myVector Limits::getCoordinetsCorner_UpRight(bool recal)
+{
+    return myVector(j_stop, i_start, recal);
+}
+myVector Limits::getCoordinetsCorner_DownLeft(bool recal)
+{
+    return myVector(j_start, i_stop, recal);
+}
+myVector Limits::getCoordinetsCorner_DownRight(bool recal)
+{
+    return myVector(j_stop, i_stop, recal);
 }
 
 Limits Limits::Get_up_left() {
@@ -72,8 +93,8 @@ Limits Limits::Get_down_right() {
 Vector2f Limits::Get_middle_position()
 {
     myVector res(
-        j_start + (Distance(j_start, j_stop) / 2),
-        i_start + (Distance(i_start, i_stop) / 2),
+        (float)j_start + (Distance(j_start, j_stop) / 2),
+        (float)i_start + (Distance(i_start, i_stop) / 2),
         false
     );
 
@@ -92,8 +113,8 @@ Vector2f Limits::Get_middle_position_offset(int x_offset, int y_offset)
 {
 
     myVector res(
-        j_start + (Distance(j_start, j_stop) / 2),
-        i_start + (Distance(i_start, i_stop) / 2),
+        (float) j_start + (Distance(j_start, j_stop) / 2),
+        (float) i_start + (Distance(i_start, i_stop) / 2),
         false
     );
 
@@ -115,7 +136,7 @@ Vector2f Limits::Get_middle_position_offset(int x_offset, int y_offset)
 Vector2f Limits::Middle_point_of_side_Left(int x_offset, int y_offset)
 {
     //              x           y
-    myVector res(j_start, i_start + (Distance(i_start, i_stop) / 2), false);
+    myVector res((float) j_start, (float) i_start + (Distance(i_start, i_stop) / 2), false);
 
     res.Offset(x_offset, y_offset);
     return *res;
@@ -123,7 +144,7 @@ Vector2f Limits::Middle_point_of_side_Left(int x_offset, int y_offset)
 Vector2f Limits::Middle_point_of_side_Right(int x_offset, int y_offset)
 {
     //              x           y
-    myVector res(j_stop, i_start + (Distance(i_start, i_stop) / 2), false);
+    myVector res((float)j_stop, (float)i_start + (Distance(i_start, i_stop) / 2), false);
 
     res.Offset(x_offset, y_offset);
     return *res;
@@ -131,7 +152,7 @@ Vector2f Limits::Middle_point_of_side_Right(int x_offset, int y_offset)
 Vector2f Limits::Middle_point_of_side_Up(int x_offset, int y_offset)
 {
     //                   x                                   y
-    myVector res(j_start + (Distance(j_start, j_stop) / 2), i_start, false);
+    myVector res((float)j_start + (Distance(j_start, j_stop) / 2), (float)i_start, false);
 
     res.Offset(x_offset, y_offset);
     return *res;
@@ -139,7 +160,7 @@ Vector2f Limits::Middle_point_of_side_Up(int x_offset, int y_offset)
 Vector2f Limits::Middle_point_of_side_Down(int x_offset, int y_offset)
 {
     //                    x                                  y
-    myVector res(j_start + (Distance(j_start, j_stop) / 2), i_stop, false);
+    myVector res((float)j_start + (Distance(j_start, j_stop) / 2), (float)i_stop, false);
 
     res.Offset(x_offset, y_offset);
     return *res;

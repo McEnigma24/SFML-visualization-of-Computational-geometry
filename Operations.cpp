@@ -1,5 +1,5 @@
 #pragma once
-#include "header.h"
+#include "Header.h"
 
 /////////////////////////////////////////////////////////////////
 Vector2f Operations::Middle_of_a_circle_no_yREC(CircleShape circle)
@@ -225,10 +225,10 @@ void Operations::Position_to_draw_middle_of_circle_void(Vector2f& point, float r
 
 
 // Essentials //
-void Operations::All_Points_Green(list<CircleShape*>& l)
+void Operations::All_Points_Green(vector<myCircle>& l)
 {
-    for (list<CircleShape*>::iterator it = l.begin(); it != l.end(); it++)
-        (*it)->setFillColor(Color::Green);
+    for (vector<myCircle>::iterator it = l.begin(); it != l.end(); it++)
+        (*it).m_circle->setFillColor(Color::Green);
 }
 
 float Operations::Get_length(float x1, float y1, float x2, float y2)
@@ -251,6 +251,19 @@ float Operations::Get_length(Vector2f firts, Vector2f second)
 float Operations::Get_length(CircleShape* c, CircleShape* ca)
 {
     Vector2f first = c->getPosition();
+    Vector2f second = ca->getPosition();
+
+    float x1 = first.x; float y1 = first.y;
+    float x2 = second.x; float y2 = second.y;
+
+    float a = x1 - x2;
+    float b = y1 - y2;
+
+    return sqrt(a * a + b * b);
+}
+float Operations::Get_length(myCircle* c, CircleShape* ca)
+{
+    Vector2f first = c->m_circle->getPosition();
     Vector2f second = ca->getPosition();
 
     float x1 = first.x; float y1 = first.y;
@@ -321,13 +334,12 @@ VertexArray Operations::Cross_with_lines___with_limits(Vector2f middle, int up_y
 {
     VertexArray lines(sf::LinesStrip, 8);
 
-    int smap_needed_1 = down_y_limit;
-    int smap_needed_2 = right_x_limit;
-
+    float smap_needed_1 = static_cast<float>(down_y_limit);
+    float smap_needed_2 = static_cast<float>(right_x_limit);
 
     // do lewego
     lines[4] = middle;
-    lines[5] = Vector2f(left_x_limit, middle.y);
+    lines[5] = Vector2f((float)left_x_limit, middle.y);
 
     // do prawego ///////////////////////////////
     lines[0] = middle;
@@ -335,7 +347,7 @@ VertexArray Operations::Cross_with_lines___with_limits(Vector2f middle, int up_y
 
     // do góry
     lines[2] = middle;
-    lines[3] = Vector2f(middle.x, up_y_limit);
+    lines[3] = Vector2f(middle.x, (float)up_y_limit);
 
     // w dó³ /////////////////////////////////////
     lines[6] = middle;
@@ -420,136 +432,137 @@ VertexArray Operations::Draw_a_rectangle(Vector2f* tab, Color c)
 
 
 // For Mesh //
-Vector2f Operations::Mesh_left(list<CircleShape*>& circle_list)
+Vector2f Operations::Mesh_left(vector<myCircle>& circle_list)
 {
-    CircleShape* left = nullptr;
-    for (list<CircleShape*>::iterator it = circle_list.begin(); it != circle_list.end(); it++)
+    myCircle* left = nullptr;
+    for (vector<myCircle>::iterator it = circle_list.begin(); it != circle_list.end(); it++)
     {
-        if (it == circle_list.begin()) left = (*it);
+        if (it == circle_list.begin()) left = &(*it);
         else
         {
-            if ((*it)->getPosition().x < left->getPosition().x)
+            if ((*it).m_circle->getPosition().x < left->m_circle->getPosition().x)
             {
-                left = (*it);
+                left = &(*it);
+            }
+        }
+    }
+
+    return Middle_of_a_circle_no_yREC(*left->m_circle);
+}
+Vector2f Operations::Mesh_right(vector<myCircle>& circle_list)
+{
+    myCircle* right = nullptr;
+    for (vector<myCircle>::iterator it = circle_list.begin(); it != circle_list.end(); it++)
+    {
+        if (it == circle_list.begin()) right = &(*it);
+        else
+        {
+            if ((*it).m_circle->getPosition().x < right->m_circle->getPosition().x)
+            {
+                right = &(*it);
+            }
+        }
+    }
+
+    return Middle_of_a_circle_no_yREC(*right->m_circle);
+}
+Vector2f Operations::Mesh_up(vector<myCircle>& circle_list)
+{
+    myCircle* up = nullptr;
+    for (vector<myCircle>::iterator it = circle_list.begin(); it != circle_list.end(); it++)
+    {
+        if (it == circle_list.begin()) up = &(*it);
+        else
+        {
+            if ((*it).m_circle->getPosition().x < up->m_circle->getPosition().x)
+            {
+                up = &(*it);
+            }
+        }
+    }
+
+    return Middle_of_a_circle_no_yREC(*up->m_circle);
+}
+Vector2f Operations::Mesh_down(vector<myCircle>& circle_list)
+{
+    myCircle* down = nullptr;
+    for (vector<myCircle>::iterator it = circle_list.begin(); it != circle_list.end(); it++)
+    {
+        if (it == circle_list.begin()) down = &(*it);
+        else
+        {
+            if ((*it).m_circle->getPosition().x < down->m_circle->getPosition().x)
+            {
+                down = &(*it);
+            }
+        }
+    }
+
+    return Middle_of_a_circle_no_yREC(*down->m_circle);
+}
+
+Vector2f Operations::Mesh_left(const vector<myCircle>& circle_list)
+{
+    CircleShape* left = nullptr;
+    for (vector<myCircle>::const_iterator it = circle_list.begin(); it != circle_list.end(); it++)
+    {
+        if (it == circle_list.begin()) left = &*(*it).m_circle;
+        else
+        {
+            if ((*it).m_circle->getPosition().x < left->getPosition().x)
+            {
+                left = &*(*it).m_circle;
             }
         }
     }
 
     return Middle_of_a_circle_no_yREC(left);
 }
-Vector2f Operations::Mesh_right(list<CircleShape*>& circle_list)
+Vector2f Operations::Mesh_right(const vector<myCircle>& circle_list)
 {
     CircleShape* right = nullptr;
-    for (list<CircleShape*>::iterator it = circle_list.begin(); it != circle_list.end(); it++)
+    for (vector<myCircle>::const_iterator it = circle_list.begin(); it != circle_list.end(); it++)
     {
-        if (it == circle_list.begin()) right = (*it);
+        if (it == circle_list.begin()) right = &*(*it).m_circle;
         else
         {
-            if ((*it)->getPosition().x > right->getPosition().x)
+            if ((*it).m_circle->getPosition().x > right->getPosition().x)
             {
-                right = (*it);
+                right = &*(*it).m_circle;
             }
         }
     }
 
     return Middle_of_a_circle_no_yREC(right);
 }
-Vector2f Operations::Mesh_up(list<CircleShape*>& circle_list)
+Vector2f Operations::Mesh_up(const vector<myCircle>& circle_list)
 {
     CircleShape* up = nullptr;
-    for (list<CircleShape*>::iterator it = circle_list.begin(); it != circle_list.end(); it++)
+    for (vector<myCircle>::const_iterator it = circle_list.begin(); it != circle_list.end(); it++)
     {
-        if (it == circle_list.begin()) up = (*it);
+        if (it == circle_list.begin()) up = &*(*it).m_circle;
         else
         {
-            if ((*it)->getPosition().y < up->getPosition().y)
+            if ((*it).m_circle->getPosition().y < up->getPosition().y)
             {
-                up = (*it);
+                up = &*(*it).m_circle;
             }
         }
     }
 
     return Middle_of_a_circle_no_yREC(up);
 }
-Vector2f Operations::Mesh_down(list<CircleShape*>& circle_list)
+Vector2f Operations::Mesh_down(const vector<myCircle>& circle_list)
 {
     CircleShape* down = nullptr;
-    for (list<CircleShape*>::iterator it = circle_list.begin(); it != circle_list.end(); it++)
+    for (vector<myCircle>::const_iterator it = circle_list.begin(); it != circle_list.end(); it++)
     {
-        if (it == circle_list.begin()) down = (*it);
+        if (it == circle_list.begin()) down = &*(*it).m_circle;
         else
         {
-            if ((*it)->getPosition().y > down->getPosition().y)
+            if ((*it).m_circle->getPosition().y > down->getPosition().y)
             {
-                down = (*it);
-            }
-        }
-    }
-
-    return Middle_of_a_circle_no_yREC(down);
-}
-Vector2f Operations::Mesh_left(const list<CircleShape*>& circle_list)
-{
-    CircleShape* left = nullptr;
-    for (list<CircleShape*>::const_iterator it = circle_list.begin(); it != circle_list.end(); it++)
-    {
-        if (it == circle_list.begin()) left = (*it);
-        else
-        {
-            if ((*it)->getPosition().x < left->getPosition().x)
-            {
-                left = (*it);
-            }
-        }
-    }
-
-    return Middle_of_a_circle_no_yREC(left);
-}
-Vector2f Operations::Mesh_right(const list<CircleShape*>& circle_list)
-{
-    CircleShape* right = nullptr;
-    for (list<CircleShape*>::const_iterator it = circle_list.begin(); it != circle_list.end(); it++)
-    {
-        if (it == circle_list.begin()) right = (*it);
-        else
-        {
-            if ((*it)->getPosition().x > right->getPosition().x)
-            {
-                right = (*it);
-            }
-        }
-    }
-
-    return Middle_of_a_circle_no_yREC(right);
-}
-Vector2f Operations::Mesh_up(const list<CircleShape*>& circle_list)
-{
-    CircleShape* up = nullptr;
-    for (list<CircleShape*>::const_iterator it = circle_list.begin(); it != circle_list.end(); it++)
-    {
-        if (it == circle_list.begin()) up = (*it);
-        else
-        {
-            if ((*it)->getPosition().y < up->getPosition().y)
-            {
-                up = (*it);
-            }
-        }
-    }
-
-    return Middle_of_a_circle_no_yREC(up);
-}
-Vector2f Operations::Mesh_down(const list<CircleShape*>& circle_list)
-{
-    CircleShape* down = nullptr;
-    for (list<CircleShape*>::const_iterator it = circle_list.begin(); it != circle_list.end(); it++)
-    {
-        if (it == circle_list.begin()) down = (*it);
-        else
-        {
-            if ((*it)->getPosition().y > down->getPosition().y)
-            {
-                down = (*it);
+                down = &*(*it).m_circle;
             }
         }
     }
@@ -557,28 +570,28 @@ Vector2f Operations::Mesh_down(const list<CircleShape*>& circle_list)
     return Middle_of_a_circle_no_yREC(down);
 }
 
-Vector2f Operations::Mesh_left_corner(list<CircleShape*>& circle_list)
+Vector2f Operations::Mesh_left_corner(vector<myCircle>& circle_list)
 {
     Vector2f left = Mesh_left(circle_list);
     Vector2f down = Mesh_down(circle_list);
 
     return Vector2f(left.x, down.y);
 }
-Vector2f Operations::Mesh_right_corner(list<CircleShape*>& circle_list)
+Vector2f Operations::Mesh_right_corner(vector<myCircle>& circle_list)
 {
     Vector2f right = Mesh_right(circle_list);
     Vector2f up = Mesh_up(circle_list);
 
     return Vector2f(right.x, up.y);
 }
-Vector2f Operations::Mesh_left_corner(const list<CircleShape*>& circle_list)
+Vector2f Operations::Mesh_left_corner(const vector<myCircle>& circle_list)
 {
     Vector2f left = Mesh_left(circle_list);
     Vector2f down = Mesh_down(circle_list);
 
     return Vector2f(left.x, down.y);
 }
-Vector2f Operations::Mesh_right_corner(const list<CircleShape*>& circle_list)
+Vector2f Operations::Mesh_right_corner(const vector<myCircle>& circle_list)
 {
     Vector2f right = Mesh_right(circle_list);
     Vector2f up = Mesh_up(circle_list);
@@ -588,14 +601,14 @@ Vector2f Operations::Mesh_right_corner(const list<CircleShape*>& circle_list)
 
 
 // For Triangulation //
-Vector2f Operations::Down_left(list<CircleShape*>& circle_list)
+Vector2f Operations::Down_left(vector<myCircle>& circle_list)
 {
     Vector2f left = Mesh_left(circle_list);
     Vector2f down = Mesh_down(circle_list);
 
     return Vector2f(left.x, down.y);
 }
-Vector2f Operations::Down_right(list<CircleShape*>& circle_list)
+Vector2f Operations::Down_right(vector<myCircle>& circle_list)
 {
     Vector2f right = Mesh_right(circle_list);
     Vector2f down = Mesh_down(circle_list);
