@@ -8,8 +8,8 @@ using namespace sf;
 // Properties //
 # define PI          3.141592653589793238462643383279502884
 
-#define WIDTH 1000
-#define HEIGHT 1000
+#define WIDTH 2000
+#define HEIGHT 1200
 #define VERTEX_ARRAY_SIZE 3
 #define CIRCLE_RAD 10
 
@@ -29,6 +29,7 @@ namespace path
 
     // output
     static string triangulation = "_output/_triangulation/";
+    static string quadtree_structured_mesh = "_output/_quadtree_structured_mesh/";
 }
 
 // Actives //
@@ -38,7 +39,6 @@ namespace path
 #define BENCHMARKING 1
 #define BENCHMARKING_FILE_SAVE 0
 
-#define ACTIVE_ERROR 1
 #define ACTIVE_LOG 1
 #define SLEEP_CLS 0
 
@@ -46,8 +46,8 @@ namespace path
 
 
 // QuadTree //
-#define QUAD_LIMIT 1
-#define QUAD_TREE_ACTIVE 0
+#define QUAD_TREE_ACTIVE 1
+#define QUAD_SEARCHING_FOR_OPTIMAL 0
 
 // LOG
 #if ACTIVE_LOG == 1
@@ -57,7 +57,7 @@ namespace path
 #endif
 
 // ERROR MESSAGES
-#if ACTIVE_ERROR == 1
+#ifdef DEBUG_MODE
 #define MY_ERROR(x) cout << "Error " << x << endl
 #else
 #define MY_ERROR(x) cout<<""

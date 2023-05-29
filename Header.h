@@ -33,8 +33,8 @@ struct offSet
 };
 struct Float
 {
-    float y;
 public:
+    float y;
     float Get_y();
 
     // r-value // never used
@@ -46,14 +46,20 @@ public:
         else y = yy;
     }
     */
-    // l-value
+    // l-value    
     Float(float yy, bool recal_y);
     Float(int yy, bool recal_y);
-    Float(Float yy, bool recal_y);
+    Float(const Float& other);
+    Float(Float other, bool recal_y);
     Float& operator=(float yy);
+
+    operator int() const;
 
     void operator+=(float add);
     void operator-=(float sub);
+
+    bool operator==(const Float& other) const;
+    bool operator!=(const Float& other) const;
 
     bool operator<(const Float& other);
     bool operator<=(const Float& other);
@@ -94,6 +100,9 @@ public:
     void Offset(offSet off);
 
     void Print();
+
+    bool operator==(const myVector& other) const;
+    bool operator!=(const myVector& other) const;
 
     Vector2f operator*();
 };
@@ -383,6 +392,7 @@ public:
     bool areAllPointsInLine();
     bool anyCommnoPointWith(Triangle t);
     Vector2f getPositionForNumber();
+    Vector2f getPositionForNumber() const;
 
     bool operator==(const Triangle& other);
     bool operator!=(const Triangle& other);
@@ -421,6 +431,9 @@ public:
         int m_id;
 
         quad_coordinets_to_file();
+
+        bool operator==(const quad_coordinets_to_file& other);
+        bool operator!=(const quad_coordinets_to_file& other);
     };
 private:
 
@@ -429,7 +442,10 @@ private:
         quad_entry* up_left; quad_entry* up_right; quad_entry* down_left; quad_entry* down_right;
         int** tab;
 
-        quad_entry(Limits obj, int** t, int& counter, list<VertexArray>& line_list, list<QuadTree::quad_coordinets_to_file>& list_coordinets, int& x_offset, int& y_offset);
+        quad_entry(Limits obj, int** t, int& counter, 
+            list<VertexArray>& line_list, list<QuadTree::quad_coordinets_to_file>& list_coordinets, 
+            int& x_offset, int& y_offset,
+            int quad_limit);
 
         int Distance_between(int a, int b);
         bool check_if_border(int istart, int istop, int jstart, int jstop);
@@ -466,12 +482,17 @@ private:
 
 public:
     QuadTree(string path, int x_off, int y_off);
+    int** getTab();
+    int** getTab(int& i_end, int& j_end);
+    offSet getOffSet();
     ~QuadTree();
 
-    void Start_Quadding();
+    void Start_Quadding(int quad_limit);
+    void Cleaning_quad_entry();
 
     list<VertexArray> getListForVisualization();
     list<quad_coordinets_to_file> getListOfCoordinets();
+    void saveCoordinetsToFile(string path);
 };
 class ConvexShell
 {
@@ -532,17 +553,19 @@ public:
     void getBadTriangles(list<Triangle>& originalTriangles, list<Triangle>& badTriangles, Vector2f newPoint);
 
     // Creating new Triangles from badTriangles
-    void newTriangles(list<Triangle>& originalTriangles, list<Triangle>& badTriangles, Vector2f newPoint);
+    void newTriangles(vector<myCircle>& lpoints, list<Triangle>& originalTriangles, list<Triangle>& badTriangles, Vector2f newPoint);
 
     // Deleting triangles with connections to Super Triangle
     void removeTrianglesCommonTo(list<Triangle>& originalTriangles, Triangle superT);
 
+    // Finding correct id for point based on coordinets
+    int getId(vector<myCircle>& lpoints, Vector2f Coordinets);
 
     // Delaunay Triangulation //
     list<Triangle> triangulationDelaunay(vector<myCircle>& lpoints);
 
     // Save to File //
-    void saveToFile(string p, const list<Triangle>& ListTriangle, const vector<myCircle> VecPoints);
+    void saveToFile(string p, const list<Triangle>& listTriangle, const vector<myCircle> vecPoints, QuadTree& q);
 };
 
 
@@ -645,23 +668,24 @@ struct Pass : private Recalculating
         // token_tab[6] == triangulation
 
         Token();
-        void Clear_Tokes();
+        void Clear_Tokens();
     };
 
-    bool prop_drawing_circles;
     int prop_drawing_coordinets;
-    bool prop_show_menu;
-    bool prop_connecting_activated;
-    bool prop_random_point_movement;
+    bool prop_drawing_circles;          // [0]
+    bool prop_show_menu;                // [1]
+    bool prop_connecting_activated;     // [2]
+    bool prop_random_point_movement;    // [3]
 
-    bool pass_mesh;
-    bool pass_connecting_points;
-    bool pass_lines_to_all;
-    bool pass_distance_to_all;
-    bool pass_closest_point;
-    bool pass_convex_shell;
-    bool pass_circum_circle;
-    bool pass_triangulation;
+    bool pass_mesh;                     // [4]
+    bool pass_connecting_points;        // [5]
+    bool pass_lines_to_all;             // [6]
+    bool pass_distance_to_all;          // [7]
+    bool pass_closest_point;            // [8]
+    bool pass_quadtree;                 // [9]
+    bool pass_convex_shell;             // [10]
+    bool pass_circum_circle;            // [11]
+    bool pass_triangulation;            // [12]
 
     Token tokens;
 
@@ -695,14 +719,12 @@ public:
     );
 
 
-    // Mo¿e do wszystkich daæ tokeny i to bêdzie tak samo jak wywo³ywanie funkcji tylko
-    // ³adniej
-    void Token_Mesh();
-    void Token_Lines();
-    void Token_Distance_line();
-    void Token_Distance_text();
-    void Token_Convex_shell();
-    void Token_Circum_Circle();
+    void tokenMesh();
+    void tokenLines();
+    void tokenDistanceLine();
+    void tokenDistanceText();
+    void tokenConvexShell();
+    void tokenCircumCircle();
     void tokenTriangulation();
 
     void Recalculating();

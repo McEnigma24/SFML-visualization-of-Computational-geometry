@@ -8,7 +8,7 @@
     {
         token_tab.fill(false);
     }
-    void Pass::Token::Clear_Tokes()
+    void Pass::Token::Clear_Tokens()
     {
         for (bool& i : token_tab)
             i = false;
@@ -38,6 +38,7 @@ Pass::Pass(vector<myCircle>* p_list_circle_points, VertexArray** p_tab_VertexArr
     pass_lines_to_all = false;
     pass_distance_to_all = false;
     pass_closest_point = false;
+    pass_quadtree = false;
     pass_convex_shell = false;
     pass_circum_circle = false;
     pass_triangulation = false;
@@ -67,12 +68,12 @@ Pass::Pass(vector<myCircle>* p_list_circle_points, VertexArray** p_tab_VertexArr
     list_triangulation = p_list_triangulation;
 }
 
-void Pass::Token_Mesh() { if (pass_mesh) tokens.token_tab[0] = true; }
-void Pass::Token_Lines() { if (pass_connecting_points) tokens.token_tab[1] = true; }
-void Pass::Token_Distance_line() { if (pass_lines_to_all) tokens.token_tab[2] = true; }
-void Pass::Token_Distance_text() { if (pass_distance_to_all) tokens.token_tab[3] = true; }
-void Pass::Token_Convex_shell() { if (pass_convex_shell) tokens.token_tab[4] = true; }
-void Pass::Token_Circum_Circle() { if (pass_circum_circle) tokens.token_tab[5] = true; }
+void Pass::tokenMesh() { if (pass_mesh) tokens.token_tab[0] = true; }
+void Pass::tokenLines() { if (pass_connecting_points) tokens.token_tab[1] = true; }
+void Pass::tokenDistanceLine() { if (pass_lines_to_all) tokens.token_tab[2] = true; }
+void Pass::tokenDistanceText() { if (pass_distance_to_all) tokens.token_tab[3] = true; }
+void Pass::tokenConvexShell() { if (pass_convex_shell) tokens.token_tab[4] = true; }
+void Pass::tokenCircumCircle() { if (pass_circum_circle) tokens.token_tab[5] = true; }
 void Pass::tokenTriangulation() { if (pass_triangulation) tokens.token_tab[6] = true; }
 
 void Pass::Recalculating()
@@ -105,5 +106,5 @@ void Pass::Recalculating()
     }
 
 
-    tokens.Clear_Tokes();
+    tokens.Clear_Tokens();
 }

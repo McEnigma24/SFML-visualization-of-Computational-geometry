@@ -84,12 +84,48 @@ bool Triangle::anyCommnoPointWith(Triangle t)
     }
     return false;
 }
+
 Vector2f Triangle::getPositionForNumber()
 {
-    Line l;
+    // stare nie dzia³a
+    /*Line l;
 
     return l.Point_of_Intersect(l.lineInTheMiddleOf2(Line(A, B), Line(A, C))
-                              , l.lineInTheMiddleOf2(Line(A, C), Line(C, B)));
+                              , l.lineInTheMiddleOf2(Line(A, C), Line(C, B)));*/
+
+    Operations o;
+
+    float a = o.Get_length(B, C);
+    float b = o.Get_length(A, C);
+    float c = o.Get_length(A, B);
+
+    Vector2f res;
+
+    res.x = ((a * A.x) + (b * B.x) + (c * C.x)) / (a + b + c);
+    res.y = ((a * A.y) + (b * B.y) + (c * C.y)) / (a + b + c);
+
+    return res;
+}
+Vector2f Triangle::getPositionForNumber() const
+{
+    // stare nie dzia³a
+    /*Line l;
+
+    return l.Point_of_Intersect(l.lineInTheMiddleOf2(Line(A, B), Line(A, C))
+                              , l.lineInTheMiddleOf2(Line(A, C), Line(C, B)));*/
+
+    Operations o;
+
+    float a = o.Get_length(B, C);
+    float b = o.Get_length(A, C);
+    float c = o.Get_length(A, B);
+
+    Vector2f res;
+
+    res.x = ((a*A.x) + (b * B.x) + (c * C.x)) / (a + b + c);
+    res.y = ((a*A.y) + (b * B.y) + (c * C.y)) / (a + b + c);
+
+    return res;
 }
 
 

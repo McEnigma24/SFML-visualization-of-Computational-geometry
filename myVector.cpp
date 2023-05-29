@@ -1,6 +1,9 @@
 #pragma once
 #include "Header.h"
 
+// hashing function for myVector and Float
+
+
 // Constructor //
 myVector::myVector(bool recal_y): x(0), y(0, recal_y){}
 myVector::myVector(float xx, float yy, bool recal_y)
@@ -72,7 +75,6 @@ void myVector::recalExisting()
     y = Float(y, true);    
 }
 
-
 // Offset //
 void myVector::Offset(int x_offset, int y_offset)
 {
@@ -107,4 +109,13 @@ Vector2f myVector::operator*()
     res.y = y.Get_y();
 
     return res;
+}
+
+bool myVector::operator==(const myVector& other) const
+{
+    return (((int) x == (int) other.x) && ((int) y == (int) other.y));
+}
+bool myVector::operator!=(const myVector& other) const
+{
+    return !this->operator==(other);
 }

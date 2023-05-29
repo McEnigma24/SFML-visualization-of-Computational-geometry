@@ -15,26 +15,28 @@
 }
 #endif
 
+// using HASH FUNCTION Line - newTriangles();
 // hashing function
-namespace std {
+    namespace std {
 
-    template <>
-    struct hash<Line>
-    {
-        std::size_t operator()(const Line& k) const
-        {   
-            // Compute individual hash values for first,
-            // second and third and combine them using XOR
-            // and bit shifting:
+        template <>
+        struct hash<Line>
+        {
+            std::size_t operator()(const Line& k) const
+            {
+                // Compute individual hash values for first,
+                // second and third and combine them using XOR
+                // and bit shifting:
 
-            return  ((hash<int>()(k.intPoint1.x) ^ 1) + 
-                     (hash<int>()(k.intPoint1.y) ^ 2) +
-                     (hash<int>()(k.intPoint2.x) ^ 3) +
-                     (hash<int>()(k.intPoint2.y) ^ 4) );
-        }
-    };
+                return  ((hash<int>()(k.intPoint1.x) ^ 1) +
+                    (hash<int>()(k.intPoint1.y) ^ 2) +
+                    (hash<int>()(k.intPoint2.x) ^ 3) +
+                    (hash<int>()(k.intPoint2.y) ^ 4));
+            }
+        };
 
-}
+    }
+
 
 // Triangle check
 bool Triangulation::checkIfPointIsInTriangle(Vector2f* triangle_points, Vector2f point)
@@ -160,19 +162,20 @@ void Triangulation::getBadTriangles(list<Triangle>& originalTriangles, list<Tria
 }
 
 // Creating new Triangles from badTriangles
-void Triangulation::newTriangles(list<Triangle>& originalTriangles, list<Triangle>& badTriangles, Vector2f newPoint)
+void Triangulation::newTriangles(vector<myCircle>& lpoints, list<Triangle>& originalTriangles, list<Triangle>& badTriangles, Vector2f newPoint)
 {
-    // Rozbicie badTriangles na linie i wyrzucenie tych które siê nie powtarzaj¹
-    
+    // Rozbicie badTriangles na linie i wyrzucenie tych które siê nie powtarzaj¹   
 
     // Podejœcie z map¹
     #if howToCheckFrequency == 0
         unordered_map<Line, int> map;
         for (auto& g : badTriangles)
         {
-            Line l1(g.A, g.B);
-            Line l2(g.A, g.C);
-            Line l3(g.B, g.C);
+            // tutaj znajduje myCircle które ma takie same wspó³rzêdne i w ten sposób znajduje w³aœciwe id
+
+            Line l1(g.A, g.B);       l1.id_a = g.id_A;      l1.id_b = g.id_B;
+            Line l2(g.A, g.C);       l2.id_a = g.id_A;      l2.id_b = g.id_C;
+            Line l3(g.B, g.C);       l3.id_a = g.id_B;      l3.id_b = g.id_C;
 
             if (map.find(l1) == map.end())            map[l1] = 0;
             if (map.find(l2) == map.end())            map[l2] = 0;
@@ -186,11 +189,13 @@ void Triangulation::newTriangles(list<Triangle>& originalTriangles, list<Triangl
         
         // teraz z niepowtarzaj¹cych siê lini tworzymy trójk¹ty i dodajemy do originalTriangles
         for (auto& m : map)
-            if (m.second == 1)
-            {
+            if (m.second == 1 && m.first.point1 != m.first.point2)
+            {                
                 Triangle t(m.first.point1, m.first.point2, newPoint);
-                
 
+                t.id_A = getId(lpoints, m.first.point1);
+                t.id_B = getId(lpoints, m.first.point2);
+                t.id_C = getId(lpoints, newPoint);
 
                 originalTriangles.push_back(t);
             }
@@ -232,6 +237,16 @@ void Triangulation::newTriangles(list<Triangle>& originalTriangles, list<Triangl
     badTriangles.clear();
 }
 
+// Finding correct id for point based on coordinets
+int Triangulation::getId(vector<myCircle>& lpoints, Vector2f Coordinets)
+{    
+    for (auto& point : lpoints)
+        if (point.getMiddle() == Coordinets)
+            return point.m_id;
+
+    return -1;
+}
+
 // Deleting triangles with connections to Super Triangle
 void Triangulation::removeTrianglesCommonTo(list<Triangle>& originalTriangles, Triangle superT)
 {
@@ -247,22 +262,25 @@ void Triangulation::removeTrianglesCommonTo(list<Triangle>& originalTriangles, T
 // Delaunay Triangulation //
 list<Triangle> Triangulation::triangulationDelaunay(vector<myCircle>& lpoints)
 {
-    BEN(ScopeTimer main_t("whole triangulation", ben::trinagulation, 1);)
+    BEN(ScopeTimer main_t("triangulation", ben::trinagulation, 1);)
     INFO(ScopeInfo info("Triangles Position"))
 
     list<Triangle> original_Triangles;      list<Triangle> bad_Triangles;
 
     Triangle Super_Triangle;
     {
-        BEN(ScopeTimer t("super triangle", ben::trinagulation);)
+        //BEN(ScopeTimer t("super triangle", ben::trinagulation);)
             Super_Triangle = createSuperTriangle(lpoints);
+            Super_Triangle.id_A = -1;
+            Super_Triangle.id_B = -2;
+            Super_Triangle.id_C = -3;
         original_Triangles.push_back(Super_Triangle);
     }
 
     {
-        BEN(ScopeTimer t("main operations", ben::trinagulation);)
+        //BEN(ScopeTimer t("main operations", ben::trinagulation);)
 
-            Vector2f points_position;
+        Vector2f points_position;
         // g³ówne obroty przez wszystkie punkty
         for (auto& point : lpoints)
         {
@@ -272,8 +290,8 @@ list<Triangle> Triangulation::triangulationDelaunay(vector<myCircle>& lpoints)
             // Identifying bad Triangles from original list                        
             getBadTriangles(original_Triangles, bad_Triangles, points_position);
 
-            // getting new Triangles from bad Triangles
-            newTriangles(original_Triangles, bad_Triangles, points_position);
+            // getting new Triangles from bad Triangles            
+            newTriangles(lpoints, original_Triangles, bad_Triangles, points_position);
         }
 
         // usuwanie tych co maj¹ choæ jedno po³¹czenie z super triangle
@@ -288,12 +306,13 @@ list<Triangle> Triangulation::triangulationDelaunay(vector<myCircle>& lpoints)
 }
 
 // Save to File //
-void Triangulation::saveToFile(string p, const list<Triangle>& listTriangle, const vector<myCircle> vecPoints)
+void Triangulation::saveToFile(string p, const list<Triangle>& listTriangle, const vector<myCircle> vecPoints, QuadTree& q)
 {
     const char* path = p.c_str();
 
     ofstream FILE(path);
     const Triangle last = listTriangle.back();
+    vector<myCircle> vecPoints_no_const = vecPoints;
 
     myVector position(false);       Vector2f v;
     FILE << "nodes" << endl;
@@ -302,19 +321,42 @@ void Triangulation::saveToFile(string p, const list<Triangle>& listTriangle, con
         position.afterConstructor(point.getMiddle(), true);
         v = *position;
 
-        FILE << point.m_id << " ";
+        FILE << point.m_id << " - ";
         FILE << v.x << " ";
-        FILE << v.y << endl;        
+        FILE << v.y << endl;
     }
 
 
-    int id{};
-    FILE << "elements" << endl;
+    int id = 1;
+    int y_coord; int x_coord;   Vector2f incircle;
+
+    int quad_x_limit{};     int quad_y_limit{};
+    int** tab = q.getTab(quad_y_limit, quad_x_limit);
+
+    // x = 1305     // y = 730
+    //cout << "x limit: " << quad_x_limit << endl;
+    //cout << "y limit: " << quad_y_limit << endl;
+
+    
+    FILE << endl << "elements" << endl;
     for (auto& triangle : listTriangle)
     {
-        id = triangle.id_A;
-        FILE << id - 1 << " ";  id *= 3;
-        FILE << id - 3 << " " << id - 2 << " " << id - 1;
+        FILE << id << " - ";  id++;
+        FILE << getId(vecPoints_no_const, triangle.A) << " " << getId(vecPoints_no_const, triangle.B)
+            << " " << getId(vecPoints_no_const, triangle.C);
+
+        incircle = triangle.getPositionForNumber();
+
+        y_coord = static_cast<int>(incircle.y - q.getOffSet().y_offset);
+        x_coord = static_cast<int>(incircle.x - q.getOffSet().x_offset);
+
+        if (y_coord < quad_y_limit && x_coord < quad_x_limit)
+        {
+            //FILE << "y " << y_coord << " x " << x_coord << " --- " << tab[y_coord][x_coord] << "  ";
+
+            if (tab[y_coord][x_coord] == 0)   FILE << " > osnowa";
+            else                              FILE << " > wydzielenie";
+        }
 
         if(triangle != last) FILE << endl;
     }

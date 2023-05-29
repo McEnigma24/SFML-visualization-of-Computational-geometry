@@ -1,6 +1,8 @@
 #pragma once
 #include "Header.h"
 
+
+
 Line::Line()
     :a(0), b(0), point1(0, 0), point2(0, 0), intPoint1(0, 0), intPoint2(0, 0)
 {

@@ -4,6 +4,7 @@
 // PATH= gdziekolwiek jest folder bin plików SFML
 // apply -> ok
 #include "Header.h"
+#include "MainVariables.h"
 
 int main()
 {
@@ -81,8 +82,7 @@ int main()
     // ~signal circle
 
     // properties //
-    int chosen = 1;
-    bool prop_connecting_activated = true;
+    int chosen = 1;    
     int circle_moving_speed = 1;
     float local_rad = CIRCLE_RAD;
     Vector2i previous_mouse_position = (Vector2i(0, 0));
@@ -106,7 +106,7 @@ int main()
         }
     }
     // ~BENCHMARKING //
-        
+    
 
     // Main Structures //
     VertexArrayFunctions vfunc;
@@ -116,7 +116,7 @@ int main()
     //ConvexShell otoczka;
 
     int id_for_circle = 1;
-    vector<myCircle> vec_circle_points;             vec_circle_points.reserve(25);
+    vector<myCircle> vec_circle_points;             vec_circle_points.reserve(125);
     CircleShape* p_chosen_circle_for_moving = nullptr;
     CircleShape* p_distance_calculation_circle = nullptr;
     CircleShape* circum_circle = nullptr;
@@ -126,7 +126,7 @@ int main()
     list<VertexArray> list_mesh_blocks;
     list<Text> list_length_of_distances_dcl;
     VertexArray* tab_VertexArray_points_in_circle = new VertexArray[VERTEX_ARRAY_SIZE];
-    // [0] - connecting circles    
+    // [0] - connecting circles
     // [1] - lines to all points from dcl
     // [2] - convex shell lines
 
@@ -146,11 +146,68 @@ int main()
     );
     // ~Passing of Calculations //
 
+    // dla siatki strukturalnej
     #if QUAD_TREE_ACTIVE == 1
         //Quad Tree serducho.txt go_.txt
-        QuadTree q(path::quadtree + "s.txt", 100, 300); // not recalculating y
-        q.Start_Quadding();
-        list<VertexArray> quadtree_list = q.Get_List_for_visualization();
+        QuadTree q(path::quadtree + "siatka na projekt go 2.txt", 100, 300); // not recalculating y
+        list<VertexArray> quadtree_list;
+        list<QuadTree::quad_coordinets_to_file> points_from_quadtree;
+
+        #if QUAD_SEARCHING_FOR_OPTIMAL == 1
+            int optimal_quad_limit = 1;
+            bool optimum_reached = false;
+        #else 
+            int quad_limit = 1;
+
+            q.Start_Quadding(quad_limit);
+            quadtree_list = q.getListForVisualization();
+            points_from_quadtree = q.getListOfCoordinets();
+
+            // rozrzedzamy listê
+            {
+                list<QuadTree::quad_coordinets_to_file> tmp;
+
+                int index;
+                int co_ = 1;
+
+                while (points_from_quadtree.size() > 100)
+                {
+                    index = 0;      co_++;
+
+                    for (auto& iti : points_from_quadtree)
+                    {
+                        if ((index % co_ == 0) && (iti.down_right.x - iti.down_left.x == quad_limit))  tmp.push_back(iti);
+                        index++;
+                    }
+                    points_from_quadtree = tmp;
+                    tmp.clear();
+                }
+
+                cout << points_from_quadtree.size() << " " << co_ << endl;
+            }
+
+            // dodajemy z points_from_quadtree do vec_circle_points
+            {
+                for (auto& quad_point : points_from_quadtree)
+                {
+                    myVector myvec = quad_point.up_left;    myvec.recalExisting();
+                    Vector2f position = *myvec;
+                    position.x += 100;
+                    position.y += 300;
+
+                    myCircle mycircle;
+                    mycircle.m_id = id_for_circle;                  id_for_circle++;
+                    mycircle.m_circle->setRadius(local_rad);
+                    mycircle.m_circle->setFillColor(sf::Color::Red);
+
+                    mycircle.m_circle->setPosition(position);
+                    mycircle.m_circle->setPosition(mycircle.setMiddle());
+
+                    // dodanie do listy                            
+                    vec_circle_points.push_back(mycircle);
+                }
+            }
+        #endif
     #endif
 
     // Fraktale //    
@@ -198,7 +255,139 @@ int main()
     }
     */
 
+
+
+
+
+    // Rolling thought Big_Pass bools //
+    vector<std::reference_wrapper<bool>> rolling_bools;
+    {
+        // Properties //
+        rolling_bools.push_back(Big_Pass.prop_drawing_circles);          // [0]        
+        rolling_bools.push_back(Big_Pass.prop_show_menu);                // [1]
+        rolling_bools.push_back(Big_Pass.prop_connecting_activated);     // [2]
+        rolling_bools.push_back(Big_Pass.prop_random_point_movement);    // [3]
+
+        // Passes //
+        rolling_bools.push_back(Big_Pass.pass_mesh);                     // [4]
+        rolling_bools.push_back(Big_Pass.pass_connecting_points);        // [5]
+        rolling_bools.push_back(Big_Pass.pass_lines_to_all);             // [6]
+        rolling_bools.push_back(Big_Pass.pass_distance_to_all);          // [7]
+        rolling_bools.push_back(Big_Pass.pass_closest_point);            // [8]
+        rolling_bools.push_back(Big_Pass.pass_quadtree);                 // [9]
+        rolling_bools.push_back(Big_Pass.pass_convex_shell);             // [10]
+        rolling_bools.push_back(Big_Pass.pass_circum_circle);            // [11]
+        rolling_bools.push_back(Big_Pass.pass_triangulation);            // [12]        
+    }
     
+    vector<vector<int>> custom_configurations;
+    // konfiguracje - numery indexów boolów, które zostan¹ w³¹czone
+    {
+        // pierwsza konfiguracja
+        if (1)
+        {
+            custom_configurations.push_back({ 9 });         // quadtree
+            // save quadtree //
+            custom_configurations.push_back({ 0, 9 });      // quadtree + draw_points
+            custom_configurations.push_back({ 0 });         // draw_points
+            custom_configurations.push_back({ 0, 12 });     // draw_points + triangulation
+            custom_configurations.push_back({ 12 });        // triangulation
+            // save triangulation //
+        }
+
+        // inna konfiguracja
+        if (0)
+        {
+
+        }
+
+
+        rolling_bools::confing_upper_limit = static_cast<int>(custom_configurations.size()) - 1;
+    }
+
+    // Pre-Set //
+    if (false)
+    {
+        Big_Pass.pass_quadtree = true;
+        Big_Pass.prop_show_menu = false;
+        Big_Pass.prop_drawing_circles = false;
+    }
+    // applying first configuration
+    else if(!custom_configurations.empty())
+    {
+        vector<int>& configuration = custom_configurations[0];
+        {
+            // wy³¹czenie wszystkich pozosta³ych
+            for (auto& r : rolling_bools)    r.get() = false;
+
+            // w³¹czanie wybranych
+            for (auto& pass : configuration)
+            {
+                rolling_bools[pass].get() = true;
+
+                switch (pass)
+                {
+                case 4:
+                {
+                    Big_Pass.tokenMesh();
+                    break;
+                }
+
+                case 5:
+                {
+                    Big_Pass.tokenLines();
+                    break;
+                }
+
+                case 6:
+                {
+                    Big_Pass.tokenDistanceLine();
+                    break;
+                }
+
+                case 7:
+                {
+                    Big_Pass.tokenDistanceText();
+                    break;
+                }
+
+                case 8:
+                {
+
+                    break;
+                }
+
+                case 9:
+                {
+
+                    break;
+                }
+
+                case 10:
+                {
+                    Big_Pass.tokenConvexShell();
+                    break;
+                }
+
+                case 11:
+                {
+                    if (vec_circle_points.size() == 3) Big_Pass.tokenCircumCircle();
+                    break;
+                }
+
+                case 12:
+                {
+                    if (vec_circle_points.size() > 2)  Big_Pass.tokenTriangulation();
+                    break;
+                }
+
+
+                default:
+                    break;
+                }
+            }
+        }
+    }
 
     while (window.isOpen())
     {
@@ -238,12 +427,12 @@ int main()
 
                             // Passes //
                             {
-                                Big_Pass.Token_Mesh();
-                                Big_Pass.Token_Lines();
-                                Big_Pass.Token_Distance_line();
-                                Big_Pass.Token_Distance_text();
-                                Big_Pass.Token_Convex_shell();
-                                if (vec_circle_points.size() == 3) Big_Pass.Token_Circum_Circle();
+                                Big_Pass.tokenMesh();
+                                Big_Pass.tokenLines();
+                                Big_Pass.tokenDistanceLine();
+                                Big_Pass.tokenDistanceText();
+                                Big_Pass.tokenConvexShell();
+                                if (vec_circle_points.size() == 3) Big_Pass.tokenCircumCircle();
                                 if (vec_circle_points.size() > 2)  Big_Pass.tokenTriangulation();
                             }
 
@@ -254,51 +443,6 @@ int main()
                     // ³aczymy kó³ka liniami biegn¹cymi do œrodka kó³ka, czyœci vertex_list i wstawia tam nowy VertexArray z wykalkulowanymi œrokami kó³ek
                     else if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
                     {
-                        // Before Big Pass
-                        /*
-                        if (!pass_connecting_points)
-                        {
-                            pass_connecting_points = true;
-                            int list_size = distance(vec_circle_points.begin(), vec_circle_points.end());
-                            if (list_size > 0)
-                            {
-                                if (prop_connecting_activated) list_size++;
-
-                                VertexArray lines(sf::LinesStrip, list_size);
-                                int i = 0;
-                                Vector2f tmp;
-                                float rad;
-                                for (list<CircleShape*>::const_iterator it = vec_circle_points.begin(); it != vec_circle_points.end(); it++)
-                                {
-                                    rad = (*it)->getRadius();
-                                    tmp = (*it)->getPosition();
-                                    tmp.x = tmp.x + rad;
-                                    tmp.y = tmp.y + rad;
-
-                                    lines[i] = tmp;
-                                    i++;
-                                }
-                                if (prop_connecting_activated)
-                                {
-                                    rad = (*vec_circle_points.begin())->getRadius();
-                                    tmp = (*vec_circle_points.begin())->getPosition();
-                                    tmp.x = tmp.x + rad;
-                                    tmp.y = tmp.y + rad;
-
-                                    lines[list_size - 1] = tmp;
-                                }
-
-                                tab_VertexArray_points_in_circle[0] = lines;
-                            }
-                            SLEEP(100);
-                        }
-                        else
-                        {
-                            pass_connecting_points = false;
-                            SLEEP(100);
-                        }
-                        */
-
                         if (!Big_Pass.pass_connecting_points)
                         {
                             Big_Pass.pass_connecting_points = true;
@@ -364,11 +508,34 @@ int main()
                             {
                                 // Nie potrzebne rekalkulacje                                
                                 
-                                Big_Pass.Token_Distance_line();
-                                Big_Pass.Token_Distance_text();                                
+                                Big_Pass.tokenDistanceLine();
+                                Big_Pass.tokenDistanceText();                                
                             }
 
                             //SLEEP(100);
+                        }
+                    }
+
+                    // zmieniamy konfiguracje
+                    if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) || (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)))
+                    {
+                        if (!custom_configurations.empty())
+                        {
+                            cout << rolling_bools::chosen_configuration_index << " -> ";
+
+                            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))               rolling_bools::chosen_configuration_index++;
+                            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))        rolling_bools::chosen_configuration_index--;
+
+
+                            if (rolling_bools::chosen_configuration_index == rolling_bools::confing_lower_limit - 1)
+                                rolling_bools::chosen_configuration_index = rolling_bools::confing_upper_limit;
+
+                            else if (rolling_bools::chosen_configuration_index == rolling_bools::confing_upper_limit + 1)
+                                rolling_bools::chosen_configuration_index = rolling_bools::confing_lower_limit;
+
+                            cout << rolling_bools::chosen_configuration_index << endl;
+
+                            SLEEP(200);
                         }
                     }
 
@@ -421,12 +588,12 @@ int main()
 
                             // Passes //
                             {
-                                Big_Pass.Token_Mesh();
-                                Big_Pass.Token_Lines();
-                                Big_Pass.Token_Distance_line();
-                                Big_Pass.Token_Distance_text();
-                                Big_Pass.Token_Convex_shell();
-                                if (vec_circle_points.size() == 3) Big_Pass.Token_Circum_Circle();
+                                Big_Pass.tokenMesh();
+                                Big_Pass.tokenLines();
+                                Big_Pass.tokenDistanceLine();
+                                Big_Pass.tokenDistanceText();
+                                Big_Pass.tokenConvexShell();
+                                if (vec_circle_points.size() == 3) Big_Pass.tokenCircumCircle();
                                 if (vec_circle_points.size() > 2)  Big_Pass.tokenTriangulation();
                             }
                         }
@@ -446,12 +613,12 @@ int main()
 
                         // Passes //
                         {
-                            Big_Pass.Token_Mesh();
-                            Big_Pass.Token_Lines();
-                            Big_Pass.Token_Distance_line();
-                            Big_Pass.Token_Distance_text();
-                            Big_Pass.Token_Convex_shell();
-                            if (vec_circle_points.size() == 3) Big_Pass.Token_Circum_Circle();
+                            Big_Pass.tokenMesh();
+                            Big_Pass.tokenLines();
+                            Big_Pass.tokenDistanceLine();
+                            Big_Pass.tokenDistanceText();
+                            Big_Pass.tokenConvexShell();
+                            if (vec_circle_points.size() == 3) Big_Pass.tokenCircumCircle();
                             if (vec_circle_points.size() > 2)  Big_Pass.tokenTriangulation();
                         }
                     }
@@ -500,12 +667,12 @@ int main()
 
                         // Passes //
                         {
-                            Big_Pass.Token_Mesh();
-                            Big_Pass.Token_Lines();
-                            Big_Pass.Token_Distance_line();
-                            Big_Pass.Token_Distance_text();
-                            Big_Pass.Token_Convex_shell();
-                            if (vec_circle_points.size() == 3) Big_Pass.Token_Circum_Circle();
+                            Big_Pass.tokenMesh();
+                            Big_Pass.tokenLines();
+                            Big_Pass.tokenDistanceLine();
+                            Big_Pass.tokenDistanceText();
+                            Big_Pass.tokenConvexShell();
+                            if (vec_circle_points.size() == 3) Big_Pass.tokenCircumCircle();
                             if (vec_circle_points.size() > 2)  Big_Pass.tokenTriangulation();
                         }
                     }
@@ -539,6 +706,85 @@ int main()
                 {
                     break;
                 }
+            }
+
+            // Apply Configuration switch //
+            if(rolling_bools::previously_chosen_configuration_index != rolling_bools::chosen_configuration_index)
+            {
+                vector<int>& configuration = custom_configurations[rolling_bools::chosen_configuration_index];
+                {
+                    // wy³¹czenie wszystkich pozosta³ych
+                    for (auto& r : rolling_bools)    r.get() = false;
+
+                    // w³¹czanie wybranych
+                    for (auto& pass : configuration)
+                    {
+                        rolling_bools[pass].get() = true;
+
+                        switch (pass)
+                        {
+                            case 4:
+                            {
+                                Big_Pass.tokenMesh();
+                                break;
+                            }
+
+                            case 5:
+                            {
+                                Big_Pass.tokenLines();
+                                break;
+                            }
+
+                            case 6:
+                            {
+                                Big_Pass.tokenDistanceLine();
+                                break;
+                            }
+
+                            case 7:
+                            {
+                                Big_Pass.tokenDistanceText();
+                                break;
+                            }
+
+                            case 8:
+                            {
+
+                                break;
+                            }
+
+                            case 9:
+                            {
+
+                                break;
+                            }
+
+                            case 10:
+                            {
+                                Big_Pass.tokenConvexShell();
+                                break;
+                            }
+
+                            case 11:
+                            {
+                                if (vec_circle_points.size() == 3) Big_Pass.tokenCircumCircle();
+                                break;
+                            }
+
+                            case 12:
+                            {
+                                if (vec_circle_points.size() > 2)  Big_Pass.tokenTriangulation();
+                                break;
+                            }
+
+
+                            default:
+                                break;
+                        }
+                    }
+                }
+
+                rolling_bools::previously_chosen_configuration_index = rolling_bools::chosen_configuration_index;
             }
 
 
@@ -602,12 +848,12 @@ int main()
 
                     // Passes //
                     {
-                        Big_Pass.Token_Mesh();
-                        Big_Pass.Token_Lines();
-                        Big_Pass.Token_Distance_line();
-                        Big_Pass.Token_Distance_text();
-                        Big_Pass.Token_Convex_shell();
-                        if (vec_circle_points.size() == 3) Big_Pass.Token_Circum_Circle();
+                        Big_Pass.tokenMesh();
+                        Big_Pass.tokenLines();
+                        Big_Pass.tokenDistanceLine();
+                        Big_Pass.tokenDistanceText();
+                        Big_Pass.tokenConvexShell();
+                        if (vec_circle_points.size() == 3) Big_Pass.tokenCircumCircle();
                         if (vec_circle_points.size() > 2)  Big_Pass.tokenTriangulation();
                     }
 
@@ -621,8 +867,13 @@ int main()
                     if (Big_Pass.pass_convex_shell) cout << "";
                     if (Big_Pass.pass_triangulation)
                     {
-                        trian.saveToFile(path::triangulation + "all triangle information.txt", list_triangulaton_triangles, vec_circle_points);
+                        trian.saveToFile(path::triangulation + "nodes_elements.txt", list_triangulaton_triangles, vec_circle_points, q);
                         cout << "triangulation saved" << endl;
+                    }
+                    if (Big_Pass.pass_quadtree)
+                    {
+                        q.saveCoordinetsToFile(path::quadtree_structured_mesh + "nodes_elements.txt");
+                        cout << "quadtree mesh saved" << endl;
                     }
 
                     SLEEP(100);
@@ -762,6 +1013,12 @@ int main()
                         }
                     }
                 }
+                // P bo projekt - show_quadtree 
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::P))
+                {                    
+                    Big_Pass.pass_quadtree = !Big_Pass.pass_quadtree;
+                    SLEEP(100);
+                }
                 // Otoczka wypuk³a
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::O))
                 {
@@ -865,12 +1122,12 @@ int main()
 
                 // Passes //
                 {
-                    Big_Pass.Token_Mesh();
-                    Big_Pass.Token_Lines();
-                    Big_Pass.Token_Distance_line();
-                    Big_Pass.Token_Distance_text();
-                    Big_Pass.Token_Convex_shell();
-                    if (vec_circle_points.size() == 3) Big_Pass.Token_Circum_Circle();
+                    Big_Pass.tokenMesh();
+                    Big_Pass.tokenLines();
+                    Big_Pass.tokenDistanceLine();
+                    Big_Pass.tokenDistanceText();
+                    Big_Pass.tokenConvexShell();
+                    if (vec_circle_points.size() == 3) Big_Pass.tokenCircumCircle();
                     if (vec_circle_points.size() > 2)  Big_Pass.tokenTriangulation();
                 }
             }
@@ -878,6 +1135,43 @@ int main()
             // Recalculating //
             Big_Pass.Recalculating();
 
+
+            // searching for optimal quad_limit
+            #if QUAD_SEARCHING_FOR_OPTIMAL == 1
+
+                if (!optimum_reached)
+                {
+                    window.clear();
+
+                    #if QUAD_TREE_ACTIVE == 1
+                        q.Start_Quadding(optimal_quad_limit);
+                        quadtree_list = q.getListForVisualization();
+                    #endif
+
+                                    // quad tree
+                    int quad_counter{};
+                    #if QUAD_TREE_ACTIVE == 1
+                        for (auto& obj : quadtree_list)
+                        {
+                            window.draw(obj);
+                            quad_counter++;
+                        }
+                    #endif
+
+                        if (quad_counter < 1000) optimum_reached = true;
+                        else
+                        {
+                            optimal_quad_limit += 5;
+                            q.Cleaning_quad_entry();
+                        }
+
+                    SLEEP(500);
+                    window.display();
+                }
+
+                else
+                {
+            #endif
 
             window.clear();
             {
@@ -906,7 +1200,7 @@ int main()
                         cout << "point1 " << inBetween.point1.x << " " << inBetween.point1.y << endl;
                         cout << "point2 " << inBetween.point2.x << " " << inBetween.point2.y << endl;
 
-                        window.draw(vfunc.drawLine(inBetween, Color::Red));                        
+                        window.draw(vfunc.drawLine(inBetween, Color::Red));
                     }
                 }
                 */
@@ -936,10 +1230,10 @@ int main()
 
                         VertexArray lines = o.Cross_with_lines(*my);
                         window.draw(lines);
-                    }                         
+                    }
 
                     // Trójk¹t z punktami na koñcach
-                    
+
                     if (0)
                     {
                         Triangle tra(Vector2f(0, 0), Vector2f(150, 300), Vector2f(300, 0));
@@ -976,7 +1270,7 @@ int main()
                             }
                         }
                     }
-                    
+
 
                     // testing line     with random point
                     if (0)
@@ -994,7 +1288,7 @@ int main()
                         window.draw(circle_c);
                     }
 
-                    // testing line     next position                     
+                    // testing line     next position
                     if (0)
                     {
                         randy = laaaaaa.NextPointAfter(randy, 0.5, false);
@@ -1007,22 +1301,22 @@ int main()
                         window.draw(vfunc.drawLine(laaaaaa, Color::Red));
                         window.draw(circle_c);
                     }
-                    
+
 
                     // rekurencja Fraktal z Trójk¹tów
-                    
+
                     if (0)
                         for (auto& obj : triangle_list)
-                        {                            
+                        {
                             window.draw(obj);
                         }
-                    
+
                 }
                 */
-                
-                
+
+
                 // Show if Big_Pass
-                if(1)
+                if (1)
                 {
                     // p_distance_calculation_circle - Yellow
                     if (p_distance_calculation_circle != nullptr)
@@ -1056,10 +1350,9 @@ int main()
 
                     // quad tree
                     #if QUAD_TREE_ACTIVE == 1
-                    {
-                        for (auto& obj : quadtree_list)
-                            window.draw(obj);
-                    }
+                        if(Big_Pass.pass_quadtree)
+                            for (auto& obj : quadtree_list)
+                                window.draw(obj);
                     #endif
 
                     // circum circle
@@ -1093,11 +1386,11 @@ int main()
                 }
 
                 // menu staff + circles
-                if(1)
+                if (1)
                 {
                     // circles
                     if (Big_Pass.prop_drawing_circles)
-                    {                        
+                    {
                         for (auto& point : vec_circle_points)
                         {
                             window.draw(*point.m_circle);
@@ -1108,69 +1401,69 @@ int main()
                                 {
                                     Vector2f original_position = point.getMiddle();
                                     Vector2f position = original_position;
-                                    
+
                                     sf::Text text_numbers_of_points;
-                                    text_numbers_of_points.setFont(font);                                    
+                                    text_numbers_of_points.setFont(font);
                                     text_numbers_of_points.setCharacterSize(20); // in pixels, not points!
                                     text_numbers_of_points.setFillColor(sf::Color::White);
 
                                     switch (Big_Pass.prop_drawing_coordinets)
                                     {
                                         // tylko numeracja
-                                        case 0:
-                                        {
-                                            position.x += 3;
-                                            position.y += 3;
+                                    case 0:
+                                    {
+                                        position.x += 3;
+                                        position.y += 3;
 
-                                            text_numbers_of_points.setPosition(position);
-                                            text_numbers_of_points.setString(to_string(point.m_id));
-
-
-                                            window.draw(text_numbers_of_points);
-                                            break;
-                                        }
-
-                                        // tylko wspó³rzêdne
-                                        case 1:
-                                        {
-                                            myVector kartezius_position(original_position, true);
-                                            Vector2f kartez = *kartezius_position;
-
-                                            position.x -= 40;
-                                            position.y += 10;
-                                            text_numbers_of_points.setPosition(position);
-                                            text_numbers_of_points.setString("(" + to_string((int)kartez.x) +
-                                                ", " + to_string((int)kartez.y) + ")");
+                                        text_numbers_of_points.setPosition(position);
+                                        text_numbers_of_points.setString(to_string(point.m_id));
 
 
-                                            window.draw(text_numbers_of_points);
-                                            break;
-                                        }
+                                        window.draw(text_numbers_of_points);
+                                        break;
+                                    }
 
-                                        // numbercja + wspó³rzêdne
-                                        case 2:
-                                        {
-                                            position.x += 3;
-                                            position.y += 3;
+                                    // tylko wspó³rzêdne
+                                    case 1:
+                                    {
+                                        myVector kartezius_position(original_position, true);
+                                        Vector2f kartez = *kartezius_position;
 
-                                            text_numbers_of_points.setString(to_string(point.m_id));
-                                            text_numbers_of_points.setPosition(position);
-                                            window.draw(text_numbers_of_points);
+                                        position.x -= 40;
+                                        position.y += 10;
+                                        text_numbers_of_points.setPosition(position);
+                                        text_numbers_of_points.setString("(" + to_string((int)kartez.x) +
+                                            ", " + to_string((int)kartez.y) + ")");
 
-                                            myVector kartezius_position(original_position, true);
-                                            Vector2f kartez = *kartezius_position;
 
-                                            text_numbers_of_points.setString("(" + to_string((int)kartez.x) +
-                                                ", " + to_string((int)kartez.y) + ")");
-                                            position.x -= 40;
-                                            position.y += 20;
-                                            text_numbers_of_points.setPosition(position);
-                                            window.draw(text_numbers_of_points);
+                                        window.draw(text_numbers_of_points);
+                                        break;
+                                    }
 
-                                            break;
-                                        }
+                                    // numbercja + wspó³rzêdne
+                                    case 2:
+                                    {
+                                        position.x += 3;
+                                        position.y += 3;
 
-                                        default: {  break; }
+                                        text_numbers_of_points.setString(to_string(point.m_id));
+                                        text_numbers_of_points.setPosition(position);
+                                        window.draw(text_numbers_of_points);
+
+                                        myVector kartezius_position(original_position, true);
+                                        Vector2f kartez = *kartezius_position;
+
+                                        text_numbers_of_points.setString("(" + to_string((int)kartez.x) +
+                                            ", " + to_string((int)kartez.y) + ")");
+                                        position.x -= 40;
+                                        position.y += 20;
+                                        text_numbers_of_points.setPosition(position);
+                                        window.draw(text_numbers_of_points);
+
+                                        break;
+                                    }
+
+                                    default: {  break; }
                                     }
                                 }
                             }
@@ -1186,9 +1479,16 @@ int main()
                 }
             }
             window.display();
+
+            #if QUAD_SEARCHING_FOR_OPTIMAL == 1
+            }
+
+            #endif // QUAD_SEARCHING_FOR_OPTIMAL == 1
+
+
         //}
 
-
+        // stare
         // Continuous Random Points Position
         /*
         window.clear();

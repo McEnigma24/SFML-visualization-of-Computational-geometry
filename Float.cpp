@@ -27,15 +27,26 @@ Float::Float(int yy, bool recal_y)
     if (recal_y) y = (float)REC(yy);
     else y = (float)yy;
 }
-Float::Float(Float yy, bool recal_y)
+Float::Float(const Float& other)
 {
-    if (recal_y) y = (float)REC(yy.Get_y());
-    else y = yy.Get_y();
+    y = other.y;
+}
+Float::Float(Float other, bool recal_y)
+{
+    if (recal_y) y = (float)REC(other.y);
+    else y = (float)other.y;
 }
 Float& Float::operator=(float yy)
 {
     y = yy;
     return *this;
+}
+
+
+// conversion function
+Float::operator int() const
+{
+    return static_cast<int>(y);
 }
 
 void Float::operator+=(float add)
@@ -49,6 +60,16 @@ void Float::operator-=(float sub)
     y += sub;
 }
 
+
+bool Float::operator==(const Float& other) const
+{
+    return ((int)y == (int)other.y);
+}
+bool Float::operator!=(const Float& other) const
+{
+    return !this->operator==(other);
+}
+
 bool Float::operator<(const Float& other)
 {
     return (this->y < other.y);
@@ -57,6 +78,7 @@ bool Float::operator<=(const Float& other)
 {
     return (this->y <= other.y);
 }
+
 bool Float::operator>(const Float& other)
 {
     return (this->y > other.y);
